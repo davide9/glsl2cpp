@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Detail\VectorBase.h">
+    <ClInclude Include="Details\Util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
