@@ -110,13 +110,13 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 		return *this;
 	}
 
-	template<typename U, class = std::enable_if_t<get_total_size_v<U> == Order>>
+	template<typename U, class = std::enable_if_t<(Order > 1) && (Details::get_total_size_v<U> == Order)>>
 	bool operator==(const U& anOther) const
 	{
 		return equal(decay(anOther));
 	}
 
-	template<typename U, class = std::enable_if_t<get_total_size_v<U> == Order>>
+	template<typename U, class = std::enable_if_t<(Order > 1) && (Details::get_total_size_v<U> == Order)>>
 	bool operator!=(const U& anOther) const
 	{
 		return !equal(decay(anOther));
@@ -136,7 +136,7 @@ private:
 		((myData[i++] = CAST(arg.myData[Other_Ns])), ...);
 	}
 
-	bool equal(const vector_type& anOther)
+	bool equal(const vector_type& anOther) const
 	{
 		bool isEqual = true;
 		((isEqual &= myData[Ns] == anOther.myData[Ns]), ...);

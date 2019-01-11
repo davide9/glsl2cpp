@@ -61,6 +61,18 @@ struct Swizzler
 		return *this;
 	}
 
+	template<typename U, class = std::enable_if_t<(get_total_size_v<U> == Order) && (Order > 1)>>
+	bool operator==(const U& aVec) const
+	{
+		return Decay() == decay(aVec);
+	}
+
+	template<typename U, class = std::enable_if_t<(get_total_size_v<U> == Order) && (Order > 1)>>
+	bool operator!=(const U& aVec) const
+	{
+		return Decay() != decay(aVec);
+	}
+
 private:
 	VectorT Read() const
 	{

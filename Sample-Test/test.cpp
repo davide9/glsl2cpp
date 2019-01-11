@@ -271,6 +271,10 @@ TEST(Vector, Addition)
 	EXPECT_EQ(vFour.x, 8);
 	EXPECT_EQ(vFour.y, 8);
 	EXPECT_EQ(vFour.z, 4);
+
+	auto vSix = vOne + vFour;
+	auto vSeven = vFour + vOne;
+	EXPECT_EQ(vSix, vSeven);
 }
 
 TEST(Vector, Difference)
@@ -324,4 +328,8 @@ TEST(Vector, Difference)
 	EXPECT_EQ(vFour.x, 0);
 	EXPECT_EQ(vFour.y, 0);
 	EXPECT_EQ(vFour.z, 2);
+
+	auto vSix = vOne - vFour;
+	auto vSeven = vFour - vOne;
+	EXPECT_EQ(vSix.xy, vSeven.yx);
 }
