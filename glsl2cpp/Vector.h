@@ -3,8 +3,8 @@
 #include "Details/VectorBase.h"
 #include "Details/Util.h"
 
-#define ALLOW_GLSL_VECTOR_NARROW_CONVERSION 1
-#if ALLOW_GLSL_VECTOR_NARROW_CONVERSION
+#define ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION 1
+#if ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION
 #define CAST(val) scalar_type(val)
 #else
 #define CAST(val) scalar_type{val}
@@ -21,7 +21,6 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 	using vector_type = Vector_<T, Ns...>;
 	using base_type = Details::VectorBase<T, sizeof...(Ns)>;
 	using decay_type = std::conditional_t<Order == 1, scalar_type, vector_type>;
-	using collapse_type = typename base_type::template Swizzler<Ns...>;
 
     static_assert(std::is_scalar_v<T>, "T must be a scalar type");
 
@@ -71,16 +70,6 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 		return myData[0];
 	}
 
-	operator std::conditional_t<Order == 1, Details::Nothing<1>, collapse_type&>&()
-	{
-		return *reinterpret_cast<collapse_type>(this);
-	}
-
-	operator std::conditional_t<Order == 1, Details::Nothing<1>, collapse_type>() const
-	{
-		return *reinterpret_cast<collapse_type>(this);
-	}
-
 private:
 	
 	template<typename U, class = std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<U>>>>
@@ -113,5 +102,4 @@ using vec4f = Vector<float, 4>;
 
 }
 
-#undef ALLOW_GLSL_VECTOR_NARROW_CONVERSION
 #undef CAST

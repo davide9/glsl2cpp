@@ -102,3 +102,23 @@ TEST(Vector4, Construction)
 	EXPECT_EQ(vMix.z, 5);
 	EXPECT_EQ(vMix.w, 5);
 }
+
+#if ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION
+TEST(Vector, NarrowConstruction)
+{
+	glsl2cpp::vec3i vFloatIntoInt(1.f);
+	EXPECT_EQ(vFloatIntoInt.x, 1);
+	EXPECT_EQ(vFloatIntoInt.y, 1);
+	EXPECT_EQ(vFloatIntoInt.z, 1);
+
+	glsl2cpp::vec3f vIntIntoFloat(2, 3, 4);
+	EXPECT_EQ(vIntIntoFloat.x, 2);
+	EXPECT_EQ(vIntIntoFloat.y, 3);
+	EXPECT_EQ(vIntIntoFloat.z, 4);
+
+	glsl2cpp::vec3i vIntFromFloat(vIntIntoFloat);
+	EXPECT_EQ(vIntFromFloat.x, 2);
+	EXPECT_EQ(vIntFromFloat.y, 3);
+	EXPECT_EQ(vIntFromFloat.z, 4);
+}
+#endif
