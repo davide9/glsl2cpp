@@ -14,8 +14,7 @@ struct Swizzler
 
 	VectorT Decay() const
 	{
-		VectorT vec;
-		Read(vec, 0, Indices...);
+        VectorT vec = Read(vec);
 		return vec;
 	}
 
@@ -31,21 +30,25 @@ struct Swizzler
 
 	Swizzler& operator=(const VectorT& aVec)
 	{
-		Write(aVec, 0, Indices...);
+		Write(aVec);
 		return *this;
 	}
 
 private:
-	template<typename... Indices>
-	void Read(VectorT& aVec, size_t i, Indices... swizz_i) const
+	VectorT Read() const
 	{
-		((aVec[i++] = myData[swizz_i]), ...);
+        VectorT vec;
+
+        size_t i;
+		((aVec[i++] = myData[Indices]), ...);
+
+        return vec;
 	}
 
-	template<typename... Indices>
-	void Write(const VectorT& aVec, size_t i, Indices... swizz_i)
+	void Write(const VectorT& aVec)
 	{
-		((myData[swizz_i] = aVec[i++]), ...);
+        size_t i;
+		((myData[Indices] = aVec[i++]), ...);
 	}
 };
 

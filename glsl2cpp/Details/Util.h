@@ -34,7 +34,7 @@ template<typename T, size_t... Ns>
 struct get_size<Vector_<T, Ns...>> : std::integral_constant<size_t, sizeof...(Ns)> {};
 
 template<typename T>
-constexpr size_t get_size_v = get_size<T>::value;
+constexpr size_t get_size_v = get_size<std::remove_const_t<std::remove_reference_t<T>>>::value;
 
 template<typename... Ts>
 struct get_total_size;
@@ -43,7 +43,7 @@ template<>
 struct get_total_size<> : std::integral_constant<size_t, 0> {};
 
 template<typename T, typename... Ts>
-struct get_total_size<T, Ts...> : std::integral_constant<size_t, get_size<T>::value + get_total_size<Ts...>::value> {};
+struct get_total_size<T, Ts...> : std::integral_constant<size_t, get_size_v<T> + get_total_size<Ts...>::value> {};
 
 template<typename... Ts>
 constexpr size_t get_total_size_v = get_total_size<Ts...>::value;

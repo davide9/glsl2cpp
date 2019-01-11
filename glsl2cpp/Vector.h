@@ -23,11 +23,13 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 	using decay_type = std::conditional_t<Order == 1, scalar_type, vector_type>;
 	using collapse_type = typename base_type::template Swizzler<Ns...>;
 
+    static_assert(std::is_scalar_v<T>, "T must be a scalar type");
+
 	using base_type::myData;
 
 	Vector_()
 	{
-		((myData[Ns] = 0), ...);
+		((myData[Ns] = 0), ...); // should this really be initialized to 0 ?
 	}
 
 	Vector_(std::conditional_t<Order == 1, scalar_type, Details::Nothing<0>> s)
@@ -40,7 +42,7 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 		((myData[Ns] = s), ...);
 	}
 
-	template<typename... Args, class = typename std::enable_if<(Details::get_total_size_v<std::remove_reference_t<std::remove_const_t<Args>>...> <= Order)>::type>
+	template<typename... Args, class = typename std::enable_if_t<(Details::get_total_size_v<Args...> <= Order) && (Details::get_total_size_v<Args...> > 1)>>
 	explicit Vector_(Args&&... args)
 	{
 		size_t i = 0;
