@@ -45,4 +45,22 @@ inline auto operator+(const U& aLHS, const V& aRHS) -> decltype(Operators::sum(d
 	return Operators::sum(decay(aLHS), decay(aRHS));
 }
 
+template<typename U, typename V>
+inline auto operator-(const U& aLHS, const V& aRHS) -> decltype(Operators::diff(decay(aLHS), decay(aRHS)))
+{
+	return Operators::diff(decay(aLHS), decay(aRHS));
+}
+
+template<typename U, typename V>
+inline auto operator*(const U& aLHS, const V& aRHS) -> decltype(Operators::mul(decay(aLHS), decay(aRHS)))
+{
+	return Operators::mul(decay(aLHS), decay(aRHS));
+}
+
+template<typename U, typename V>
+inline auto operator/(const U& aLHS, const V& aRHS) -> decltype(Operators::div(decay(aLHS), decay(aRHS)))
+{
+	return Operators::div(decay(aLHS), decay(aRHS));
+}
+
 }

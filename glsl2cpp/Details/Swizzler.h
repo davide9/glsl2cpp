@@ -40,6 +40,27 @@ struct Swizzler
 		return *this;
 	}
 
+	template<typename U, class = std::enable_if_t<get_total_size_v<U> == Order>>
+	Swizzler& operator-=(const U& aVec)
+	{
+		Write(Decay() - decay(aVec));
+		return *this;
+	}
+
+	template<typename U, class = std::enable_if_t<get_total_size_v<U> == Order>>
+	Swizzler& operator*=(const U& aVec)
+	{
+		Write(Decay() * decay(aVec));
+		return *this;
+	}
+
+	template<typename U, class = std::enable_if_t<get_total_size_v<U> == Order>>
+	Swizzler& operator/=(const U& aVec)
+	{
+		Write(Decay() / decay(aVec));
+		return *this;
+	}
+
 private:
 	VectorT Read() const
 	{
