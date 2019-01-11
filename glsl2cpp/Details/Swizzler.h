@@ -20,12 +20,8 @@ struct Swizzler
 		return vec;
 	}
 
-	operator VectorT() const
-	{
-		return Decay();
-	}
-
-	operator VectorT()
+	template<typename U, size_t... Other_Ns, class = std::enable_if_t<sizeof...(Other_Ns) == Order>>
+	operator Vector_<U, Other_Ns...>() const
 	{
 		return Decay();
 	}

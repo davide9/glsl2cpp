@@ -195,6 +195,11 @@ TEST(Vector, SwizzlerAssignment)
 	EXPECT_EQ(vThree.y, 4);
 	EXPECT_EQ(vThree.z, 4);
 
+	vThree = vOne.xxz;
+	EXPECT_EQ(vThree.x, 2);
+	EXPECT_EQ(vThree.y, 2);
+	EXPECT_EQ(vThree.z, 4);
+
 #if ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION
 	vOne.xy = vThree.zz;
 	EXPECT_EQ(vOne.x, 4);
@@ -207,5 +212,10 @@ TEST(Vector, SwizzlerAssignment)
 	EXPECT_EQ(vOne.x, 6);
 	EXPECT_EQ(vOne.y, 5);
 	EXPECT_EQ(vOne.z, 5);
+
+	vOne = vFour.zyx;
+	EXPECT_EQ(vOne.x, 6);
+	EXPECT_EQ(vOne.y, 5);
+	EXPECT_EQ(vOne.z, 4);
 #endif
 }
