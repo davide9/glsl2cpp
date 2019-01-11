@@ -120,3 +120,4 @@ using vec4f = Vector<float, 4>;
 }
 
 #undef CAST
+#undef CAST_TO
