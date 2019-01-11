@@ -272,3 +272,56 @@ TEST(Vector, Addition)
 	EXPECT_EQ(vFour.y, 8);
 	EXPECT_EQ(vFour.z, 4);
 }
+
+TEST(Vector, Difference)
+{
+	glsl2cpp::vec3i vOne(1);
+	glsl2cpp::vec3i vTwo(2);
+
+	auto vThree = vTwo - vOne;
+	EXPECT_EQ(vThree.x, 1);
+	EXPECT_EQ(vThree.y, 1);
+	EXPECT_EQ(vThree.z, 1);
+
+	vOne -= vThree;
+	EXPECT_EQ(vOne.x, 0);
+	EXPECT_EQ(vOne.y, 0);
+	EXPECT_EQ(vOne.z, 0);
+
+	glsl2cpp::vec3l vFour(4);
+
+	vFour -= vOne;
+	EXPECT_EQ(vFour.x, 4);
+	EXPECT_EQ(vFour.y, 4);
+	EXPECT_EQ(vFour.z, 4);
+
+	vFour = vOne - vTwo;
+	EXPECT_EQ(vFour.x, -2);
+	EXPECT_EQ(vFour.y, -2);
+	EXPECT_EQ(vFour.z, -2);
+
+	glsl2cpp::vec3l::scalar_type valBig = -std::numeric_limits<int>::max() - 20ll;
+	glsl2cpp::vec3l vBig(valBig);
+
+	valBig -= 2;
+	vFour = vBig - vTwo;
+	EXPECT_EQ(vFour.x, valBig);
+	EXPECT_EQ(vFour.y, valBig);
+	EXPECT_EQ(vFour.z, valBig);
+
+	vFour = vTwo - vBig;
+	EXPECT_EQ(vFour.x, -valBig);
+	EXPECT_EQ(vFour.y, -valBig);
+	EXPECT_EQ(vFour.z, -valBig);
+
+	vFour = vBig.yyy - vTwo.xxx;
+	EXPECT_EQ(vFour.x, valBig);
+	EXPECT_EQ(vFour.y, valBig);
+	EXPECT_EQ(vFour.z, valBig);
+
+	vFour = vTwo;
+	vFour.xy -= vTwo.zy;
+	EXPECT_EQ(vFour.x, 0);
+	EXPECT_EQ(vFour.y, 0);
+	EXPECT_EQ(vFour.z, 2);
+}
