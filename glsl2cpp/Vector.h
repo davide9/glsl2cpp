@@ -6,8 +6,10 @@
 #define ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION 1
 #if ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION
 #define CAST(val) scalar_type(val)
+#define CAST_TO(type, val) type(val)
 #else
 #define CAST(val) scalar_type{val}
+#define CAST_TO(type, val) type{val}
 #endif
 
 namespace glsl2cpp {
@@ -50,6 +52,9 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 		//should the rest remain uninitialized?
 	}
 
+	scalar_type operator[](size_t i) const { return myData[i]; }
+	scalar_type& operator[](size_t i) { return myData[i]; }
+
 	const decay_type& Decay() const
 	{
 		return static_cast<const decay_type&>(*this);
@@ -68,6 +73,18 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 	operator std::conditional_t<Order == 1, scalar_type, Details::Nothing<0>>() const
 	{
 		return myData[0];
+	}
+
+	template<typename U, size_t... Other_Ns, class = std::enable_if_t<sizeof...(Other_Ns) == Order>>
+	operator Vector_<U, Other_Ns...>() const
+	{
+		return Details::Vector_Def_t<U, Order>{*this};
+	}
+
+	vector_type& operator=(const vector_type& anOther)
+	{
+		((myData[Ns] = anOther.myData[Ns]), ...);
+		return *this;
 	}
 
 private:

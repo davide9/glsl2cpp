@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Util.h"
+
 #include <type_traits>
 
 namespace glsl2cpp {
@@ -14,7 +16,7 @@ struct Swizzler
 
 	VectorT Decay() const
 	{
-        VectorT vec = Read(vec);
+        VectorT vec = Read();
 		return vec;
 	}
 
@@ -28,9 +30,10 @@ struct Swizzler
 		return Decay();
 	}
 
-	Swizzler& operator=(const VectorT& aVec)
+	template<typename U, class = std::enable_if_t<get_total_size_v<U> == Order>>
+	Swizzler& operator=(const U& aVec)
 	{
-		Write(aVec);
+		Write(decay(aVec));
 		return *this;
 	}
 
@@ -39,15 +42,15 @@ private:
 	{
         VectorT vec;
 
-        size_t i;
-		((aVec[i++] = myData[Indices]), ...);
+        size_t i = 0;
+		((vec[i++] = myData[Indices]), ...);
 
         return vec;
 	}
 
 	void Write(const VectorT& aVec)
 	{
-        size_t i;
+        size_t i = 0;
 		((myData[Indices] = aVec[i++]), ...);
 	}
 };

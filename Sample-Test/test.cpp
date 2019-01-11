@@ -17,6 +17,9 @@ TEST(Vector1, Construction)
 
 	glsl2cpp::vec1i vCopy(vScalar);
 	EXPECT_EQ(vCopy, 1);
+
+	glsl2cpp::vec1i vSwizzlerCopy(vScalar.x);
+	EXPECT_EQ(vSwizzlerCopy, 1);
 }
 
 TEST(Vector2, Construction)
@@ -40,6 +43,10 @@ TEST(Vector2, Construction)
 	glsl2cpp::vec2i vMix(glsl2cpp::vec1i{ 4 }, 5);
 	EXPECT_EQ(vMix.x, 4);
 	EXPECT_EQ(vMix.y, 5);
+
+	glsl2cpp::vec2i vSwizzlerCopy(vMix.xy);
+	EXPECT_EQ(vSwizzlerCopy.x, 4);
+	EXPECT_EQ(vSwizzlerCopy.y, 5);
 }
 
 TEST(Vector3, Construction)
@@ -68,6 +75,11 @@ TEST(Vector3, Construction)
 	EXPECT_EQ(vMix.x, 4);
 	EXPECT_EQ(vMix.y, 4);
 	EXPECT_EQ(vMix.z, 5);
+
+	glsl2cpp::vec3i vSwizzlerMix(vMix.xy, 5);
+	EXPECT_EQ(vSwizzlerMix.x, 4);
+	EXPECT_EQ(vSwizzlerMix.y, 4);
+	EXPECT_EQ(vSwizzlerMix.z, 5);
 }
 
 TEST(Vector4, Construction)
@@ -101,6 +113,12 @@ TEST(Vector4, Construction)
 	EXPECT_EQ(vMix.y, 4);
 	EXPECT_EQ(vMix.z, 5);
 	EXPECT_EQ(vMix.w, 5);
+
+	glsl2cpp::vec4i vSwizzlerMix(vMix.xz, vMix.wy);
+	EXPECT_EQ(vSwizzlerMix.x, 4);
+	EXPECT_EQ(vSwizzlerMix.y, 5);
+	EXPECT_EQ(vSwizzlerMix.z, 5);
+	EXPECT_EQ(vSwizzlerMix.w, 4);
 }
 
 #if ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION
@@ -120,5 +138,74 @@ TEST(Vector, NarrowConstruction)
 	EXPECT_EQ(vIntFromFloat.x, 2);
 	EXPECT_EQ(vIntFromFloat.y, 3);
 	EXPECT_EQ(vIntFromFloat.z, 4);
+
+	vIntIntoFloat = vIntFromFloat;
 }
 #endif
+
+TEST(Vector, Assignment)
+{
+	glsl2cpp::vec3i vOne(1);
+	glsl2cpp::vec3i vTwo(2);
+
+	vOne = vTwo;
+	EXPECT_EQ(vOne.x, 2);
+	EXPECT_EQ(vOne.y, 2);
+	EXPECT_EQ(vOne.z, 2);
+
+	glsl2cpp::Vector<long long int, 3> vThree(3);
+
+	vThree = vOne;
+	EXPECT_EQ(vThree.x, 2);
+	EXPECT_EQ(vThree.y, 2);
+	EXPECT_EQ(vThree.z, 2);
+
+#if ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION
+	vThree = vTwo;
+	EXPECT_EQ(vThree.x, 2);
+	EXPECT_EQ(vThree.y, 2);
+	EXPECT_EQ(vThree.z, 2);
+
+	glsl2cpp::vec3f vFour(4.f);
+
+	vOne = vFour;
+	EXPECT_EQ(vOne.x, 4);
+	EXPECT_EQ(vOne.y, 4);
+	EXPECT_EQ(vOne.z, 4);
+#endif
+}
+
+TEST(Vector, SwizzlerAssignment)
+{
+	glsl2cpp::vec3i vOne(1);
+	glsl2cpp::vec3i vTwo(2);
+
+	vOne.y = 3;
+	vTwo.y = 4;
+
+	vOne.xz = vTwo.xy;
+	EXPECT_EQ(vOne.x, 2);
+	EXPECT_EQ(vOne.y, 3);
+	EXPECT_EQ(vOne.z, 4);
+
+	glsl2cpp::Vector<long long int, 3> vThree(3);
+
+	vThree.zy = vOne.zz;
+	EXPECT_EQ(vThree.x, 3);
+	EXPECT_EQ(vThree.y, 4);
+	EXPECT_EQ(vThree.z, 4);
+
+#if ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION
+	vOne.xy = vThree.zz;
+	EXPECT_EQ(vOne.x, 4);
+	EXPECT_EQ(vOne.y, 4);
+	EXPECT_EQ(vOne.z, 4);
+
+	glsl2cpp::vec3f vFour(4.f, 5.f, 6.f);
+
+	vOne.zyx = vFour.yyz;
+	EXPECT_EQ(vOne.x, 6);
+	EXPECT_EQ(vOne.y, 5);
+	EXPECT_EQ(vOne.z, 5);
+#endif
+}

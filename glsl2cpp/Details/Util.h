@@ -9,6 +9,9 @@ struct Vector_;
 
 namespace Details {
 
+template<typename VectorT, typename T, size_t N, size_t... Indices>
+struct Swizzler;
+
 template<size_t x = 0>
 struct Nothing
 {
@@ -32,6 +35,9 @@ struct get_size : std::enable_if_t<std::is_scalar_v<std::decay_t<T>>, std::integ
 
 template<typename T, size_t... Ns>
 struct get_size<Vector_<T, Ns...>> : std::integral_constant<size_t, sizeof...(Ns)> {};
+
+template<typename VectorT, typename T, size_t N, size_t... Indices>
+struct get_size<Swizzler<VectorT, T, N, Indices...>> : get_size<VectorT> {};
 
 template<typename T>
 constexpr size_t get_size_v = get_size<std::remove_const_t<std::remove_reference_t<T>>>::value;
