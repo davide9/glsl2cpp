@@ -22,6 +22,8 @@
     <ClInclude Include="Details\Swizzler.h" />
     <ClInclude Include="Details\Util.h" />
     <ClInclude Include="Details\VectorBase.h" />
+    <ClInclude Include="Details\VectorImpl.h" />
+    <ClInclude Include="Details\VectorOperators.h" />
     <ClInclude Include="Vector.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

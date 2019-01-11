@@ -153,7 +153,7 @@ TEST(Vector, Assignment)
 	EXPECT_EQ(vOne.y, 2);
 	EXPECT_EQ(vOne.z, 2);
 
-	glsl2cpp::Vector<long long int, 3> vThree(3);
+	glsl2cpp::vec3l vThree(3);
 
 	vThree = vOne;
 	EXPECT_EQ(vThree.x, 2);
@@ -188,7 +188,7 @@ TEST(Vector, SwizzlerAssignment)
 	EXPECT_EQ(vOne.y, 3);
 	EXPECT_EQ(vOne.z, 4);
 
-	glsl2cpp::Vector<long long int, 3> vThree(3);
+	glsl2cpp::vec3l vThree(3);
 
 	vThree.zy = vOne.zz;
 	EXPECT_EQ(vThree.x, 3);
@@ -218,4 +218,57 @@ TEST(Vector, SwizzlerAssignment)
 	EXPECT_EQ(vOne.y, 5);
 	EXPECT_EQ(vOne.z, 4);
 #endif
+}
+
+TEST(Vector, Addition)
+{
+	glsl2cpp::vec3i vOne(1);
+	glsl2cpp::vec3i vTwo(2);
+
+	auto vThree = vOne + vTwo;
+	EXPECT_EQ(vThree.x, 3);
+	EXPECT_EQ(vThree.y, 3);
+	EXPECT_EQ(vThree.z, 3);
+
+	vOne += vThree;
+	EXPECT_EQ(vOne.x, 4);
+	EXPECT_EQ(vOne.y, 4);
+	EXPECT_EQ(vOne.z, 4);
+
+	glsl2cpp::vec3l vFour(4);
+
+	vFour += vOne;
+	EXPECT_EQ(vFour.x, 8);
+	EXPECT_EQ(vFour.y, 8);
+	EXPECT_EQ(vFour.z, 8);
+
+	vFour = vOne + vTwo;
+	EXPECT_EQ(vFour.x, 6);
+	EXPECT_EQ(vFour.y, 6);
+	EXPECT_EQ(vFour.z, 6);
+
+	glsl2cpp::vec3l::scalar_type valBig = std::numeric_limits<int>::max() + 20ll;
+	glsl2cpp::vec3l vBig(valBig);
+
+	valBig += 2;
+	vFour = vBig + vTwo;
+	EXPECT_EQ(vFour.x, valBig);
+	EXPECT_EQ(vFour.y, valBig);
+	EXPECT_EQ(vFour.z, valBig);
+
+	vFour = vTwo + vBig;
+	EXPECT_EQ(vFour.x, valBig);
+	EXPECT_EQ(vFour.y, valBig);
+	EXPECT_EQ(vFour.z, valBig);
+
+	vFour = vTwo.xxx + vBig.yyy;
+	EXPECT_EQ(vFour.x, valBig);
+	EXPECT_EQ(vFour.y, valBig);
+	EXPECT_EQ(vFour.z, valBig);
+
+	vFour = vOne;
+	vFour.xy += vOne.zy;
+	EXPECT_EQ(vFour.x, 8);
+	EXPECT_EQ(vFour.y, 8);
+	EXPECT_EQ(vFour.z, 4);
 }
