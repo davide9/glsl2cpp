@@ -16,8 +16,7 @@ struct Swizzler
 
 	VectorT Decay() const
 	{
-        VectorT vec = Read();
-		return vec;
+		return Read();
 	}
 
 	template<typename U, size_t... Other_Ns, class = std::enable_if_t<sizeof...(Other_Ns) == Order>>

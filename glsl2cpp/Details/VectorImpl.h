@@ -3,7 +3,10 @@
 #include "VectorBase.h"
 #include "Util.h"
 
-#define ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION 1
+#ifndef ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION
+#define ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION 0
+#endif
+
 #if ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION
 #define CAST(val) scalar_type(val)
 #else
@@ -73,7 +76,7 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 		return myData[0];
 	}
 
-	// this conversion operator enable cross-type vector operations
+	// this conversion operator enable cross-type vector assignments
 	template<typename U>
 	operator Vector_<U, Ns...>() const
 	{

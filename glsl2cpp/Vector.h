@@ -1,5 +1,7 @@
 #pragma once
 
+#define ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION 1
+
 #include "Details/VectorImpl.h"
 #include "Details/VectorOperators.h"
 
