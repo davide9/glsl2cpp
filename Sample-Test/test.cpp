@@ -334,6 +334,12 @@ TEST(Vector, Difference)
 	EXPECT_EQ(vSix.xy, vSeven.yx);
 }
 
+template<typename T0, typename T1, typename T2>
+auto Clamp(const T0& v, const T1& min, const T2& max) -> T0
+{
+	return v < min ? min : v > max ? max : v;
+}
+
 TEST(Vector, Invoke)
 {
 	glsl2cpp::vec3f v(2.f, 4.f, 8.f);
@@ -357,7 +363,8 @@ TEST(Vector, Invoke)
 
 	glsl2cpp::vec3f max(3.f, 4.5f, 5.f);
 	glsl2cpp::vec3f clamp(2.f, 4.f, 5.f);
-	r = v.Invoke([](auto v, auto min, auto max) { return v < min ? min : v > max ? max : v; }, 2.f, max);
+
+	r = v.Invoke([](auto v, auto min, auto max) { return Clamp(v, min, max); }, 2.f, max);
 
 	EXPECT_EQ(r, clamp);
 }

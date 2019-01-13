@@ -85,9 +85,9 @@ constexpr auto get_val(T&& t) -> decltype(t[index])
 }
 
 template <size_t index, typename T>
-constexpr std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<T>>, T> get_val(T&& t)
+constexpr std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<T>>, T&&> get_val(T&& t)
 {
-	return t;
+	return std::forward<T>(t);
 }
 
 template<size_t Index, typename F, typename... ArgsT>
