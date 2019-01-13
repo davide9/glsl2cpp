@@ -26,6 +26,7 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 	using decay_type = std::conditional_t<Order == 1, scalar_type, vector_type>;
 
 	static_assert(std::is_scalar_v<T>, "T must be a scalar type");
+	static_assert(Order > 0, "Order must be positive");
 
 	using base_type::myData;
 
@@ -128,7 +129,7 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 	template<typename F, typename... U>
 	auto Invoke(F& aFunction, U&&... aRHS)
 	{
-		return Details::vec_invoke(aFunction, std::index_sequence<Ns...>(), *this, std::forward<U>(aRHS)...);
+		return Details::vec_invoke(aFunction, *this, std::forward<U>(aRHS)...);
 	}
 
 private:

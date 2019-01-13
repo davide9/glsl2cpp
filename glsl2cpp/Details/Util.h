@@ -54,6 +54,18 @@ struct get_total_size<T, Ts...> : std::integral_constant<size_t, get_size_v<T> +
 template<typename... Ts>
 constexpr size_t get_total_size_v = get_total_size<Ts...>::value;
 
+template<typename... Ts>
+struct get_order;
+
+template<>
+struct get_order<> : std::integral_constant<size_t, 1> {};
+
+template<typename T, typename... Ts>
+struct get_order<T, Ts...> : std::integral_constant<size_t, get_size_v<T> == 1 ? get_order<Ts...>::value : (get_order<Ts...>::value == 1 ? get_size_v<T> : (get_size_v<T> == get_order<Ts...>::value ? get_order<Ts...>::value : 0))> {};
+
+template<typename... Ts>
+constexpr size_t get_order_v = get_order<Ts...>::value;
+
 template <class T>
 constexpr auto decay(T&& t) -> decltype(t.Decay())
 {
@@ -61,9 +73,9 @@ constexpr auto decay(T&& t) -> decltype(t.Decay())
 }
 
 template <class T>
-constexpr std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<T>>, T> decay(T&& t)
+constexpr std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<T>>, T&&> decay(T&& t)
 {
-	return t;
+	return std::forward<T>(t);
 }
 
 template<size_t index, typename T>
@@ -79,15 +91,21 @@ constexpr std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<T>>, T> 
 }
 
 template<size_t Index, typename F, typename... ArgsT>
-auto vec_invoke(F& aFunction, ArgsT&&... someArgs)
+auto vec_invoke_one(F& aFunction, ArgsT&&... someArgs)
 {
 	return aFunction(Details::get_val<Index>(std::forward<ArgsT>(someArgs))...);
 }
 
 template<typename F, size_t... Ns, typename... U>
-auto vec_invoke(F& aFunction, std::index_sequence<Ns...>, U&&... aRHS)
+auto vec_invoke_impl(F& aFunction, std::index_sequence<Ns...>, U&&... aRHS)
 {
-	return Vector_<decltype(vec_invoke<0>(aFunction, Details::decay(std::forward<U>(aRHS))...)), Ns...>{ vec_invoke<Ns>(aFunction, Details::decay(std::forward<U>(aRHS))...)... };
+	return Vector_<decltype(vec_invoke_one<0>(aFunction, std::forward<U>(aRHS)...)), Ns...>{ vec_invoke_one<Ns>(aFunction, std::forward<U>(aRHS)...)... };
+}
+
+template<typename F, typename... U, typename Indices = std::make_index_sequence<get_order_v<U...>>>
+auto vec_invoke(F& aFunction, U&&... aRHS)
+{
+	return vec_invoke_impl(aFunction, Indices{}, Details::decay(std::forward<U>(aRHS))...);
 }
 
 }
