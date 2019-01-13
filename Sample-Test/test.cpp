@@ -333,3 +333,31 @@ TEST(Vector, Difference)
 	auto vSeven = vFour - vOne;
 	EXPECT_EQ(vSix.xy, vSeven.yx);
 }
+
+TEST(Vector, Invoke)
+{
+	glsl2cpp::vec3f v(2.f, 4.f, 8.f);
+	glsl2cpp::vec3f e(1.f, 2.f, 3.f);
+
+	auto r = v.Invoke([](auto v) { return std::log2(v); });
+
+	EXPECT_EQ(r, e);
+
+	glsl2cpp::vec3f exp(3.f, 2.f, 1.f);
+	glsl2cpp::vec3f expected(8.f, 16.f, 8.f);
+
+	r = v.Invoke([](auto base, auto exp) { return std::pow(base, exp); }, exp.xyz);
+
+	EXPECT_EQ(r, expected);
+
+	glsl2cpp::vec3f one(1.f, 1.f, 1.f);
+	r = v.Invoke([](auto base, auto exp) { return std::pow(base, exp); }, 0);
+
+	EXPECT_EQ(r, one);
+
+	glsl2cpp::vec3f max(3.f, 4.5f, 5.f);
+	glsl2cpp::vec3f clamp(2.f, 4.f, 5.f);
+	r = v.Invoke([](auto v, auto min, auto max) { return v < min ? min : v > max ? max : v; }, 2.f, max);
+
+	EXPECT_EQ(r, clamp);
+}

@@ -66,5 +66,29 @@ constexpr std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<T>>, T> 
 	return t;
 }
 
+template<size_t index, typename T>
+constexpr auto get_val(T&& t) -> decltype(t[index])
+{
+	return t[index];
+}
+
+template <size_t index, typename T>
+constexpr std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<T>>, T> get_val(T&& t)
+{
+	return t;
+}
+
+template<size_t Index, typename F, typename... ArgsT>
+auto vec_invoke(F& aFunction, ArgsT&&... someArgs)
+{
+	return aFunction(Details::get_val<Index>(std::forward<ArgsT>(someArgs))...);
+}
+
+template<typename F, size_t... Ns, typename... U>
+auto vec_invoke(F& aFunction, std::index_sequence<Ns...>, U&&... aRHS)
+{
+	return Vector_<decltype(vec_invoke<0>(aFunction, Details::decay(std::forward<U>(aRHS))...)), Ns...>{ vec_invoke<Ns>(aFunction, Details::decay(std::forward<U>(aRHS))...)... };
+}
+
 }
 }
