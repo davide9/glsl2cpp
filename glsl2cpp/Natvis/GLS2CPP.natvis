@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+    <Type Name="glsl2cpp::Vector_&lt;*&gt;">
+        <DisplayString>{myData}</DisplayString>
+        <Expand>
+            <Item Name="Raw">myData</Item>
+            <Item Name="x" Optional="true">x</Item>
+            <Item Name="y" Optional="true">y</Item>
+            <Item Name="z" Optional="true">z</Item>
+            <Item Name="w" Optional="true">w</Item>
+        </Expand>
+    </Type>
+
+</AutoVisualizer>

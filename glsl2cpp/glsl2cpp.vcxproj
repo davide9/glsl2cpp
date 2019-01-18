@@ -26,6 +26,9 @@
     <ClInclude Include="Details\VectorOperators.h" />
     <ClInclude Include="Vector.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="Natvis\GLS2CPP.natvis" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{1542D05A-DDCF-4B89-B4FE-69358ECC4A31}</ProjectGuid>
