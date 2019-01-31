@@ -4,6 +4,7 @@
 
 #include "Details/VectorImpl.h"
 #include "Details/VectorOperators.h"
+#include "Details/VectorFunctions.h"
 
 namespace glsl2cpp {
 

@@ -127,7 +127,7 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 	}
 
 	template<typename F, typename... U>
-	auto Invoke(F& aFunction, U&&... aRHS)
+	auto Invoke(F& aFunction, U&&... aRHS) const
 	{
 		return Details::vec_invoke(aFunction, *this, std::forward<U>(aRHS)...);
 	}
