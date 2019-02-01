@@ -4,7 +4,11 @@
 #include "Util.h"
 
 #ifndef ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION
-#define ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION 0
+#define ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION 1
+#endif
+
+#ifndef ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION
+#define ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION 1
 #endif
 
 #if ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION
@@ -77,12 +81,14 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 		return myData[0];
 	}
 
+#if ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION
 	// this conversion operator enable cross-type vector assignments
 	template<typename U>
 	operator Vector_<U, Ns...>() const
 	{
 		return Vector_<U, Ns...>{*this};
 	}
+#endif
 
 	vector_type& operator=(const vector_type& anOther)
 	{

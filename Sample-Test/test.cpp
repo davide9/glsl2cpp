@@ -1,11 +1,9 @@
 #include "pch.h"
 
-#include <Vector.h>
+#define ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION 1
+#define ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION 1
 
-TEST(TestCaseName, TestName) {
-  EXPECT_EQ(1, 1);
-  EXPECT_TRUE(true);
-}
+#include <Vector.h>
 
 TEST(Vector1, Construction)
 {
@@ -139,9 +137,29 @@ TEST(Vector, NarrowConstruction)
 	EXPECT_EQ(vIntFromFloat.y, 3);
 	EXPECT_EQ(vIntFromFloat.z, 4);
 
+#if ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION
 	vIntIntoFloat = vIntFromFloat;
+
+	EXPECT_EQ(vIntIntoFloat, vIntFromFloat);
+#endif
 }
 #endif
+
+double fooDouble(const glsl2cpp::vec3d& v)
+{
+	return v.x;
+}
+
+TEST(Vector, ImplicitConversion)
+{
+	glsl2cpp::vec3d vDouble(1.0);
+	glsl2cpp::vec3f vFloat(2.f);
+
+	EXPECT_EQ(fooDouble(glsl2cpp::vec3d{ vFloat }), 2);
+#if ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION
+	EXPECT_EQ(fooDouble(vFloat), 2);
+#endif
+}
 
 TEST(Vector, Assignment)
 {
@@ -155,6 +173,7 @@ TEST(Vector, Assignment)
 
 	glsl2cpp::vec3l vThree(3);
 
+#if ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION
 	vThree = vOne;
 	EXPECT_EQ(vThree.x, 2);
 	EXPECT_EQ(vThree.y, 2);
@@ -173,6 +192,7 @@ TEST(Vector, Assignment)
 	EXPECT_EQ(vOne.y, 4);
 	EXPECT_EQ(vOne.z, 4);
 #endif
+#endif
 }
 
 TEST(Vector, SwizzlerAssignment)
@@ -187,6 +207,8 @@ TEST(Vector, SwizzlerAssignment)
 	EXPECT_EQ(vOne.x, 2);
 	EXPECT_EQ(vOne.y, 3);
 	EXPECT_EQ(vOne.z, 4);
+
+#if ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION
 
 	glsl2cpp::vec3l vThree(3);
 
@@ -218,6 +240,7 @@ TEST(Vector, SwizzlerAssignment)
 	EXPECT_EQ(vOne.y, 5);
 	EXPECT_EQ(vOne.z, 4);
 #endif
+#endif
 }
 
 TEST(Vector, Addition)
@@ -237,6 +260,7 @@ TEST(Vector, Addition)
 
 	glsl2cpp::vec3l vFour(4);
 
+#if ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION
 	vFour += vOne;
 	EXPECT_EQ(vFour.x, 8);
 	EXPECT_EQ(vFour.y, 8);
@@ -275,6 +299,8 @@ TEST(Vector, Addition)
 	auto vSix = vOne + vFour;
 	auto vSeven = vFour + vOne;
 	EXPECT_EQ(vSix, vSeven);
+
+#endif
 }
 
 TEST(Vector, Difference)
@@ -293,6 +319,8 @@ TEST(Vector, Difference)
 	EXPECT_EQ(vOne.z, 0);
 
 	glsl2cpp::vec3l vFour(4);
+
+#if ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION
 
 	vFour -= vOne;
 	EXPECT_EQ(vFour.x, 4);
@@ -332,9 +360,10 @@ TEST(Vector, Difference)
 	auto vSix = vOne - vFour;
 	auto vSeven = vFour - vOne;
 	EXPECT_EQ(vSix.xy, vSeven.yx);
+#endif
 }
 
-TEST(Vector, Invoke)
+TEST(Vector, Function)
 {
 	glsl2cpp::vec3f v(2.f, 4.f, 8.f);
 	glsl2cpp::vec3f e(1.f, 2.f, 3.f);
