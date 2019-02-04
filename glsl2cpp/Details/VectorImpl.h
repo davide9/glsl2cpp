@@ -36,7 +36,7 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 
 	Vector_()
 	{
-		((myData[Ns] = 0), ...); // should this really be initialized to 0 ?
+		((myData[Ns] = 0), ...);
 	}
 
 	Vector_(std::conditional_t<Order == 1, scalar_type, Details::Nothing<0>> s)
@@ -55,7 +55,6 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 		size_t i = 0;
 
 		(construct_at_index(i, Details::decay(std::forward<Args>(args))), ...);
-		//should the rest remain uninitialized?
 	}
 
 	scalar_type operator[](size_t i) const { return myData[i]; }
@@ -111,6 +110,12 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 	vector_type& operator*=(const vector_type& anOther)
 	{
 		((myData[Ns] *= anOther.myData[Ns]), ...);
+		return *this;
+	}
+
+	vector_type& operator*=(scalar_type aScalar)
+	{
+		((myData[Ns] *= aScalar), ...);
 		return *this;
 	}
 

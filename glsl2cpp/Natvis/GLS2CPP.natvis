@@ -12,4 +12,15 @@
         </Expand>
     </Type>
 
+  <Type Name="glsl2cpp::Matrix_&lt;*&gt;">
+    <DisplayString>{myMat}</DisplayString>
+    <Expand>
+      <Item Name="Raw">myData</Item>
+      <Item Name="X Axis" Optional="true">myXAxis</Item>
+      <Item Name="Y Axis" Optional="true">myYAxis</Item>
+      <Item Name="Z Axis" Optional="true">myZAxis</Item>
+      <Item Name="Position" Optional="true">myPosition</Item>
+    </Expand>
+  </Type>
+
 </AutoVisualizer>

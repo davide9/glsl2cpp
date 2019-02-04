@@ -4,6 +4,7 @@
 #define ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION 1
 
 #include <Vector.h>
+#include <Matrix.h>
 
 TEST(Vector1, Construction)
 {
@@ -144,6 +145,67 @@ TEST(Vector, NarrowConstruction)
 #endif
 }
 #endif
+
+TEST(Matrix, Construction)
+{
+	glsl2cpp::mat3f mat3x3;
+	EXPECT_EQ(mat3x3.myData[0], 0);
+
+	glsl2cpp::mat3f mat3x3Identity(1.f);
+	EXPECT_EQ(mat3x3Identity.myMat[0][0], 1);
+	EXPECT_EQ(mat3x3Identity.myMat[1][1], 1);
+	EXPECT_EQ(mat3x3Identity.myMat[2][2], 1);
+	EXPECT_EQ(mat3x3Identity.myMat[1][2], 0);
+
+	glsl2cpp::vec3f vX{ 1.f, 2.f, 3.f };
+	glsl2cpp::vec3i vY{ 4.f, 5.f, 6.f };
+	glsl2cpp::vec3f vZ{ 7.f, 8.f, 9.f };
+	glsl2cpp::mat3f mat3x3Vectors(vX, vY, vZ);
+	EXPECT_EQ(mat3x3Vectors.myVec[0], vX);
+	EXPECT_EQ(mat3x3Vectors.myVec[1], vY);
+	EXPECT_EQ(mat3x3Vectors.myVec[2], vZ);
+
+	glsl2cpp::mat3f mat3x3Copy{ mat3x3Identity };
+	EXPECT_EQ(mat3x3Copy.myMat[0][0], 1);
+	EXPECT_EQ(mat3x3Copy.myMat[1][1], 1);
+	EXPECT_EQ(mat3x3Copy.myMat[2][2], 1);
+	EXPECT_EQ(mat3x3Copy.myMat[1][2], 0);
+
+	glsl2cpp::mat4f mat4x4Identity(1.f);
+	EXPECT_EQ(mat4x4Identity.myMat[0][0], 1);
+	EXPECT_EQ(mat4x4Identity.myMat[1][1], 1);
+	EXPECT_EQ(mat4x4Identity.myMat[2][2], 1);
+	EXPECT_EQ(mat4x4Identity.myMat[3][3], 1);
+	EXPECT_EQ(mat4x4Identity.myMat[3][2], 0);
+
+	EXPECT_EQ(mat4x4Identity.myMat3x3, mat3x3Identity);
+
+	auto result = vX * mat3x3Identity;
+	EXPECT_EQ(result, vX);
+	EXPECT_EQ(vX * mat3x3Identity, mat3x3Identity * vX);
+
+	result = vX * mat3x3Vectors;
+	{
+		glsl2cpp::vec3f expected{ 14.f, 32.f, 50.f };
+		EXPECT_EQ(result, expected);
+	}
+
+	result = mat3x3Vectors * vX;
+	{
+		glsl2cpp::vec3f expected{ 30.f, 36.f, 42.f };
+		EXPECT_EQ(result, expected);
+	}
+
+	auto resultMat = mat3x3Vectors * mat3x3Identity;
+	EXPECT_EQ(resultMat, mat3x3Vectors);
+	EXPECT_EQ(mat3x3Vectors * mat3x3Identity, mat3x3Identity * mat3x3Vectors);
+
+	resultMat = mat3x3Vectors * mat3x3Vectors;
+	{
+		glsl2cpp::mat3f expected{ 30, 36.f, 42., 66.f, 81.f, 96.f, 102.f, 126.f, 150.f };
+		EXPECT_EQ(resultMat, expected);
+	}
+}
 
 double fooDouble(const glsl2cpp::vec3d& v)
 {

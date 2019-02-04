@@ -7,86 +7,92 @@
 namespace glsl2cpp {
 namespace Details {
 
-template<typename VectorT, typename T, size_t N, size_t... Indices>
+template<typename SubT, typename T, size_t N, size_t... Indices>
 struct Swizzler
 {
 	static constexpr size_t Order = sizeof...(Indices);
 
 	T myData[N];
 
-	VectorT Decay() const
+	SubT Decay() const
 	{
 		return Read();
 	}
 
-	template<typename U, size_t... Other_Ns, class = std::enable_if_t<sizeof...(Other_Ns) == Order>>
+	template<typename U, size_t... Other_Ns, class = std::enable_if_t<is_matrix_v<SubT> && sizeof...(Other_Ns) == Order>>
+	operator Matrix_<U, Other_Ns...>() const
+	{
+		return Decay();
+	}
+
+	template<typename U, size_t... Other_Ns, class = std::enable_if_t<is_vector_v<SubT> && sizeof...(Other_Ns) == Order>>
 	operator Vector_<U, Other_Ns...>() const
 	{
 		return Decay();
 	}
 
 	template<typename U, class = std::enable_if_t<get_total_size_v<U> == Order>>
-	Swizzler& operator=(const U& aVec)
+	Swizzler& operator=(const U& anOther)
 	{
-		Write(decay(aVec));
+		Write(decay(anOther));
 		return *this;
 	}
 
 	template<typename U, class = std::enable_if_t<get_total_size_v<U> == Order>>
-	Swizzler& operator+=(const U& aVec)
+	Swizzler& operator+=(const U& anOther)
 	{
-		Write(Decay() + decay(aVec));
+		Write(Decay() + decay(anOther));
 		return *this;
 	}
 
 	template<typename U, class = std::enable_if_t<get_total_size_v<U> == Order>>
-	Swizzler& operator-=(const U& aVec)
+	Swizzler& operator-=(const U& anOther)
 	{
-		Write(Decay() - decay(aVec));
+		Write(Decay() - decay(anOther));
 		return *this;
 	}
 
 	template<typename U, class = std::enable_if_t<get_total_size_v<U> == Order>>
-	Swizzler& operator*=(const U& aVec)
+	Swizzler& operator*=(const U& anOther)
 	{
-		Write(Decay() * decay(aVec));
+		Write(Decay() * decay(anOther));
 		return *this;
 	}
 
 	template<typename U, class = std::enable_if_t<get_total_size_v<U> == Order>>
-	Swizzler& operator/=(const U& aVec)
+	Swizzler& operator/=(const U& anOther)
 	{
-		Write(Decay() / decay(aVec));
+		Write(Decay() / decay(anOther));
 		return *this;
 	}
 
 	template<typename U, class = std::enable_if_t<(get_total_size_v<U> == Order) && (Order > 1)>>
-	bool operator==(const U& aVec) const
+	bool operator==(const U& anOther) const
 	{
-		return Decay() == decay(aVec);
+		return Decay() == decay(anOther);
 	}
 
 	template<typename U, class = std::enable_if_t<(get_total_size_v<U> == Order) && (Order > 1)>>
-	bool operator!=(const U& aVec) const
+	bool operator!=(const U& anOther) const
 	{
-		return Decay() != decay(aVec);
+		return Decay() != decay(anOther);
 	}
 
 private:
-	VectorT Read() const
+	SubT Read() const
 	{
-        VectorT vec;
+        SubT out;
 
         size_t i = 0;
-		((vec[i++] = myData[Indices]), ...);
+		((out.myData[i++] = myData[Indices]), ...);
 
-        return vec;
+        return out;
 	}
 
-	void Write(const VectorT& aVec)
+	void Write(const SubT& aIn)
 	{
         size_t i = 0;
-		((myData[Indices] = aVec[i++]), ...);
+		((myData[Indices] = aIn.myData[i++]), ...);
 	}
 };
 

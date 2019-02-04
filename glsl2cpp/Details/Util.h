@@ -7,9 +7,12 @@ namespace glsl2cpp {
 template<typename T, size_t... Ns>
 struct Vector_;
 
+template<typename T, size_t... Ns>
+struct Matrix_;
+
 namespace Details {
 
-template<typename VectorT, typename T, size_t N, size_t... Indices>
+template<typename SubT, typename T, size_t N, size_t... Indices>
 struct Swizzler;
 
 template<size_t x = 0>
@@ -17,6 +20,18 @@ struct Nothing
 {
 	Nothing() = delete;
 };
+
+template <class T>
+constexpr auto decay(T&& t) -> decltype(t.Decay())
+{
+	return t.Decay();
+}
+
+template <class T>
+constexpr std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<T>>, T&&> decay(T&& t)
+{
+	return std::forward<T>(t);
+}
 
 template<template <size_t...> class T, typename L>
 struct unpack;
@@ -36,11 +51,11 @@ struct get_size : std::enable_if_t<std::is_scalar_v<std::decay_t<T>>, std::integ
 template<typename T, size_t... Ns>
 struct get_size<Vector_<T, Ns...>> : std::integral_constant<size_t, sizeof...(Ns)> {};
 
-template<typename VectorT, typename T, size_t N, size_t... Indices>
-struct get_size<Swizzler<VectorT, T, N, Indices...>> : get_size<VectorT> {};
+template<typename T, size_t... Ns>
+struct get_size<Matrix_<T, Ns...>> : std::integral_constant<size_t, sizeof...(Ns) * sizeof...(Ns)> {};
 
 template<typename T>
-constexpr size_t get_size_v = get_size<std::remove_const_t<std::remove_reference_t<T>>>::value;
+constexpr size_t get_size_v = get_size<std::remove_const_t<std::remove_reference_t<decltype(decay(std::declval<T>()))>>>::value;
 
 template<typename... Ts>
 struct get_total_size;
@@ -54,6 +69,27 @@ struct get_total_size<T, Ts...> : std::integral_constant<size_t, get_size_v<T> +
 template<typename... Ts>
 constexpr size_t get_total_size_v = get_total_size<Ts...>::value;
 
+template<typename T>
+struct is_vector : std::false_type {};
+
+template<typename T, size_t... Ns>
+struct is_vector<Vector_<T, Ns...>> : std::true_type {};
+
+template<typename T>
+constexpr bool is_vector_v = is_vector<std::remove_const_t<std::remove_reference_t<decltype(decay(std::declval<T>()))>>>::value;
+
+template<typename T>
+struct is_matrix: std::false_type {};
+
+template<typename T, size_t... Ns>
+struct is_matrix<Matrix_<T, Ns...>> : std::true_type {};
+
+template<typename T>
+constexpr bool is_matrix_v = is_matrix<std::remove_const_t<std::remove_reference_t<decltype(decay(std::declval<T>()))>>>::value;
+
+template<typename T>
+constexpr bool is_scalar_v = std::is_scalar_v<decltype(decay(std::declval<T>()))>;
+
 template<typename... Ts>
 struct get_order;
 
@@ -65,18 +101,6 @@ struct get_order<T, Ts...> : std::integral_constant<size_t, get_size_v<T> == 1 ?
 
 template<typename... Ts>
 constexpr size_t get_order_v = get_order<Ts...>::value;
-
-template <class T>
-constexpr auto decay(T&& t) -> decltype(t.Decay())
-{
-	return t.Decay();
-}
-
-template <class T>
-constexpr std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<T>>, T&&> decay(T&& t)
-{
-	return std::forward<T>(t);
-}
 
 template<size_t index, typename T>
 constexpr auto get_val(T&& t) -> decltype(t[index])

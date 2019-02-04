@@ -5,9 +5,6 @@
 
 namespace glsl2cpp {
 
-template<typename T, size_t... Ns>
-struct Vector_;
-
 namespace Details {
 
 template<typename T, size_t N>
@@ -40,7 +37,6 @@ struct SwizzlerFactory
 		using type = T;
 	};
 };
-
 
 template<typename T, size_t N, template<size_t...> class SwizzlerT = SwizzlerFactory<T, N>::SwizzlerType>
 struct VectorBase

@@ -18,24 +18,10 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Details\MatrixBase.h" />
-    <ClInclude Include="Details\Swizzler.h" />
-    <ClInclude Include="Details\Util.h" />
-    <ClInclude Include="Details\VectorBase.h" />
-    <ClInclude Include="Details\VectorFunctions.h" />
-    <ClInclude Include="Details\VectorImpl.h" />
-    <ClInclude Include="Details\VectorOperators.h" />
-    <ClInclude Include="Matrix.h" />
-    <ClInclude Include="Vector.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Natvis Include="Natvis\GLS2CPP.natvis" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{1542D05A-DDCF-4B89-B4FE-69358ECC4A31}</ProjectGuid>
-    <RootNamespace>glsl2cpp</RootNamespace>
+    <ProjectGuid>{EE2E33D2-C57B-4B9C-A30D-903C704F1441}</ProjectGuid>
+    <RootNamespace>TestUsage</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -84,8 +70,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)\..\Build\$(ProjectName)\$(Configuration)\</OutDir>
-    <IntDir>..\Output\$(ProjectName)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)\..\glsl2cpp;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(SolutionDir)\..\glsl2cpp;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -112,6 +100,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -132,6 +121,9 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Source.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
