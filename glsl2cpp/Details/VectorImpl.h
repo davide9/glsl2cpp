@@ -3,20 +3,6 @@
 #include "VectorBase.h"
 #include "Util.h"
 
-#ifndef ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION
-#define ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION 1
-#endif
-
-#ifndef ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION
-#define ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION 1
-#endif
-
-#if ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION
-#define CAST(val) scalar_type(val)
-#else
-#define CAST(val) scalar_type{val}
-#endif
-
 namespace glsl2cpp {
 
 template<typename T, size_t... Ns>
@@ -80,7 +66,7 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 		return myData[0];
 	}
 
-#if ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION
+#if ALLOW_GLSL2CPP_IMPLICIT_CONVERSION
 	// this conversion operator enable cross-type vector assignments
 	template<typename U>
 	operator Vector_<U, Ns...>() const
@@ -148,13 +134,13 @@ private:
 	template<typename U, class = std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<U>>>>
 	void construct_at_index(size_t &i, U&& arg)
 	{
-		myData[i++] = CAST(arg);
+		myData[i++] = GLSL2CPP_CAST(arg);
 	}
 
 	template<typename Other, size_t... Other_Ns>
 	void construct_at_index(size_t& i, const Vector_<Other, Other_Ns...>& arg)
 	{
-		((myData[i++] = CAST(arg.myData[Other_Ns])), ...);
+		((myData[i++] = GLSL2CPP_CAST(arg.myData[Other_Ns])), ...);
 	}
 
 	bool equal(const vector_type& anOther) const
@@ -166,5 +152,3 @@ private:
 };
 
 }
-
-#undef CAST

@@ -1,7 +1,7 @@
 #include "pch.h"
 
-#define ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION 1
-#define ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION 1
+#define ALLOW_GLSL2CPP_IMPLICIT_CONVERSION 1
+#define ALLOW_GLSL2CPP_NARROW_CONVERSION 1
 
 #include <Vector.h>
 #include <Matrix.h>
@@ -120,7 +120,7 @@ TEST(Vector4, Construction)
 	EXPECT_EQ(vSwizzlerMix.w, 4);
 }
 
-#if ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION
+#if ALLOW_GLSL2CPP_NARROW_CONVERSION
 TEST(Vector, NarrowConstruction)
 {
 	glsl2cpp::vec3i vFloatIntoInt(1.f);
@@ -138,13 +138,18 @@ TEST(Vector, NarrowConstruction)
 	EXPECT_EQ(vIntFromFloat.y, 3);
 	EXPECT_EQ(vIntFromFloat.z, 4);
 
-#if ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION
+#if ALLOW_GLSL2CPP_IMPLICIT_CONVERSION
 	vIntIntoFloat = vIntFromFloat;
 
 	EXPECT_EQ(vIntIntoFloat, vIntFromFloat);
 #endif
 }
 #endif
+
+double booDouble(const glsl2cpp::mat3d& v)
+{
+    return v[0][0];
+}
 
 TEST(Matrix, Construction)
 {
@@ -158,11 +163,17 @@ TEST(Matrix, Construction)
 	EXPECT_EQ(mat3x3Identity.myMat[1][2], 0);
 
 	glsl2cpp::vec3f vX{ 1.f, 2.f, 3.f };
+#if ALLOW_GLSL2CPP_NARROW_CONVERSION
 	glsl2cpp::vec3i vY{ 4.f, 5.f, 6.f };
+#else
+    glsl2cpp::vec3f vY{ 4.f, 5.f, 6.f };
+#endif
 	glsl2cpp::vec3f vZ{ 7.f, 8.f, 9.f };
 	glsl2cpp::mat3f mat3x3Vectors(vX, vY, vZ);
 	EXPECT_EQ(mat3x3Vectors.myVec[0], vX);
+#if ALLOW_GLSL2CPP_IMPLICIT_CONVERSION
 	EXPECT_EQ(mat3x3Vectors.myVec[1], vY);
+#endif
 	EXPECT_EQ(mat3x3Vectors.myVec[2], vZ);
 
 	glsl2cpp::mat3f mat3x3Copy{ mat3x3Identity };
@@ -202,9 +213,19 @@ TEST(Matrix, Construction)
 
 	resultMat = mat3x3Vectors * mat3x3Vectors;
 	{
-		glsl2cpp::mat3f expected{ 30, 36.f, 42., 66.f, 81.f, 96.f, 102.f, 126.f, 150.f };
+#if ALLOW_GLSL2CPP_NARROW_CONVERSION
+		glsl2cpp::mat3f expected{ 30, 36.f, 42.0, 66.0, 81, 96.f, 102.f, 126.0, 150 };
+#else
+        glsl2cpp::mat3f expected{ 30.f, 36.f, 42.f, 66.f, 81.f, 96.f, 102.f, 126.f, 150.f };
+#endif
 		EXPECT_EQ(resultMat, expected);
 	}
+
+#if ALLOW_GLSL2CPP_IMPLICIT_CONVERSION
+    EXPECT_EQ(booDouble(mat3x3Identity), 1);
+#else
+    EXPECT_EQ(booDouble(glsl2cpp::mat3d{ mat3x3Identity }), 1);
+#endif
 }
 
 double fooDouble(const glsl2cpp::vec3d& v)
@@ -218,7 +239,7 @@ TEST(Vector, ImplicitConversion)
 	glsl2cpp::vec3f vFloat(2.f);
 
 	EXPECT_EQ(fooDouble(glsl2cpp::vec3d{ vFloat }), 2);
-#if ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION
+#if ALLOW_GLSL2CPP_IMPLICIT_CONVERSION
 	EXPECT_EQ(fooDouble(vFloat), 2);
 #endif
 }
@@ -235,13 +256,13 @@ TEST(Vector, Assignment)
 
 	glsl2cpp::vec3l vThree(3);
 
-#if ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION
+#if ALLOW_GLSL2CPP_IMPLICIT_CONVERSION
 	vThree = vOne;
 	EXPECT_EQ(vThree.x, 2);
 	EXPECT_EQ(vThree.y, 2);
 	EXPECT_EQ(vThree.z, 2);
 
-#if ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION
+#if ALLOW_GLSL2CPP_NARROW_CONVERSION
 	vThree = vTwo;
 	EXPECT_EQ(vThree.x, 2);
 	EXPECT_EQ(vThree.y, 2);
@@ -270,7 +291,7 @@ TEST(Vector, SwizzlerAssignment)
 	EXPECT_EQ(vOne.y, 3);
 	EXPECT_EQ(vOne.z, 4);
 
-#if ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION
+#if ALLOW_GLSL2CPP_IMPLICIT_CONVERSION
 
 	glsl2cpp::vec3l vThree(3);
 
@@ -284,7 +305,7 @@ TEST(Vector, SwizzlerAssignment)
 	EXPECT_EQ(vThree.y, 2);
 	EXPECT_EQ(vThree.z, 4);
 
-#if ALLOW_GLSL2CPP_VECTOR_NARROW_CONVERSION
+#if ALLOW_GLSL2CPP_NARROW_CONVERSION
 	vOne.xy = vThree.zz;
 	EXPECT_EQ(vOne.x, 4);
 	EXPECT_EQ(vOne.y, 4);
@@ -322,7 +343,7 @@ TEST(Vector, Addition)
 
 	glsl2cpp::vec3l vFour(4);
 
-#if ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION
+#if ALLOW_GLSL2CPP_IMPLICIT_CONVERSION
 	vFour += vOne;
 	EXPECT_EQ(vFour.x, 8);
 	EXPECT_EQ(vFour.y, 8);
@@ -382,7 +403,7 @@ TEST(Vector, Difference)
 
 	glsl2cpp::vec3l vFour(4);
 
-#if ALLOW_FLSL2CPP_VECTOR_IMPLICIT_CONVERSION
+#if ALLOW_GLSL2CPP_IMPLICIT_CONVERSION
 
 	vFour -= vOne;
 	EXPECT_EQ(vFour.x, 4);

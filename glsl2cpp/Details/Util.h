@@ -2,6 +2,20 @@
 
 #include <type_traits>
 
+#ifndef ALLOW_GLSL2CPP_NARROW_CONVERSION
+#define ALLOW_GLSL2CPP_NARROW_CONVERSION 1
+#endif
+
+#ifndef ALLOW_GLSL2CPP_IMPLICIT_CONVERSION
+#define ALLOW_GLSL2CPP_IMPLICIT_CONVERSION 1
+#endif
+
+#if ALLOW_GLSL2CPP_NARROW_CONVERSION
+#define GLSL2CPP_CAST(val) scalar_type(val)
+#else
+#define GLSL2CPP_CAST(val) scalar_type{val}
+#endif
+
 namespace glsl2cpp {
 
 template<typename T, size_t... Ns>

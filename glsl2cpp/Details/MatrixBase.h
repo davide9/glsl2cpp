@@ -137,11 +137,13 @@ struct Matrix_ : Details::BaseMatrix_<T, sizeof...(Ns)>
 		construct_from(Details::decay(std::forward<Args>(args))...);
 	}
 
+#if ALLOW_GLSL2CPP_IMPLICIT_CONVERSION
 	template<typename U>
 	operator Matrix_<U, Ns...>() const
 	{
 		return Matrix_<U, Ns...>{*this};
 	}
+#endif
 
 	vector_type operator[](size_t i) const { return myVec[i]; }
 	vector_type& operator[](size_t i) { return myVec[i]; }
@@ -207,14 +209,17 @@ struct Matrix_ : Details::BaseMatrix_<T, sizeof...(Ns)>
 	}
 
 private:
-	void construct_from(scalar_type aScalar)
+
+    template<typename U, class = std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<U>>>>
+	void construct_from(U&& aScalar)
 	{
-		((myMat[Ns][Ns] = aScalar), ...);
+		((myMat[Ns][Ns] = GLSL2CPP_CAST(aScalar)), ...);
 	}
 
-	void construct_at(size_t anIndex, scalar_type aScalar)
+    template<typename U, class = std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<U>>>>
+	void construct_at(size_t anIndex, U&& aScalar)
 	{
-		myData[anIndex] = aScalar;
+		myData[anIndex] = GLSL2CPP_CAST(aScalar);
 	}
 
 	template<typename U, size_t... Other_Ns>
@@ -240,7 +245,7 @@ private:
 	template<typename U, size_t... Other_Ns>
 	void construct_line(size_t anIndex, const Vector_<U, Other_Ns...>& aLine)
 	{
-		((myVec[anIndex][Other_Ns] = aLine[Other_Ns]), ...);
+		((myVec[anIndex][Other_Ns] = GLSL2CPP_CAST(aLine[Other_Ns])), ...);
 	}
 
 	bool equal(const matrix_type& anOther) const
