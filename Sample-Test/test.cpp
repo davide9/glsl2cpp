@@ -164,16 +164,14 @@ TEST(Matrix, Construction)
 
 	glsl2cpp::vec3f vX{ 1.f, 2.f, 3.f };
 #if ALLOW_GLSL2CPP_NARROW_CONVERSION
-	glsl2cpp::vec3i vY{ 4.f, 5.f, 6.f };
+	glsl2cpp::vec3i vY{ 4, 5, 6 };
 #else
     glsl2cpp::vec3f vY{ 4.f, 5.f, 6.f };
 #endif
 	glsl2cpp::vec3f vZ{ 7.f, 8.f, 9.f };
 	glsl2cpp::mat3f mat3x3Vectors(vX, vY, vZ);
 	EXPECT_EQ(mat3x3Vectors.myVec[0], vX);
-#if ALLOW_GLSL2CPP_IMPLICIT_CONVERSION
 	EXPECT_EQ(mat3x3Vectors.myVec[1], vY);
-#endif
 	EXPECT_EQ(mat3x3Vectors.myVec[2], vZ);
 
 	glsl2cpp::mat3f mat3x3Copy{ mat3x3Identity };

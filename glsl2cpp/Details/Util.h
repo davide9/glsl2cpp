@@ -29,6 +29,16 @@ namespace Details {
 template<typename SubT, typename T, size_t N, size_t... Indices>
 struct Swizzler;
 
+template<typename... T>
+struct check_invocable
+{
+    template<typename F>
+    static constexpr bool check(F&&) { return std::is_invocable_v<F, T...>; }
+};
+
+template<typename T>
+using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+
 template<size_t x = 0>
 struct Nothing
 {
@@ -36,15 +46,16 @@ struct Nothing
 };
 
 template <class T>
-constexpr auto decay(T&& t) -> decltype(t.Decay())
+constexpr auto decay(T&& t)
 {
-	return t.Decay();
-}
-
-template <class T>
-constexpr std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<T>>, T&&> decay(T&& t)
-{
-	return std::forward<T>(t);
+    if constexpr (check_invocable<T>::check([](auto x) -> decltype(x.Decay()) { return x.Decay(); }))
+    {
+        return t.Decay();
+    }
+    else
+    {
+        return t;
+    }
 }
 
 template<template <size_t...> class T, typename L>
@@ -69,7 +80,7 @@ template<typename T, size_t... Ns>
 struct get_size<Matrix_<T, Ns...>> : std::integral_constant<size_t, sizeof...(Ns) * sizeof...(Ns)> {};
 
 template<typename T>
-constexpr size_t get_size_v = get_size<std::remove_const_t<std::remove_reference_t<decltype(decay(std::declval<T>()))>>>::value;
+constexpr size_t get_size_v = get_size<remove_cvref_t<decltype(decay(std::declval<T>()))>>::value;
 
 template<typename... Ts>
 struct get_total_size;
@@ -90,7 +101,7 @@ template<typename T, size_t... Ns>
 struct is_vector<Vector_<T, Ns...>> : std::true_type {};
 
 template<typename T>
-constexpr bool is_vector_v = is_vector<std::remove_const_t<std::remove_reference_t<decltype(decay(std::declval<T>()))>>>::value;
+constexpr bool is_vector_v = is_vector<remove_cvref_t<decltype(decay(std::declval<T>()))>>::value;
 
 template<typename T>
 struct is_matrix: std::false_type {};
@@ -99,7 +110,7 @@ template<typename T, size_t... Ns>
 struct is_matrix<Matrix_<T, Ns...>> : std::true_type {};
 
 template<typename T>
-constexpr bool is_matrix_v = is_matrix<std::remove_const_t<std::remove_reference_t<decltype(decay(std::declval<T>()))>>>::value;
+constexpr bool is_matrix_v = is_matrix<remove_cvref_t<decltype(decay(std::declval<T>()))>>::value;
 
 template<typename T>
 constexpr bool is_scalar_v = std::is_scalar_v<decltype(decay(std::declval<T>()))>;
@@ -117,33 +128,33 @@ template<typename... Ts>
 constexpr size_t get_order_v = get_order<Ts...>::value;
 
 template<size_t index, typename T>
-constexpr auto get_val(T&& t) -> decltype(t[index])
+constexpr std::enable_if_t<is_vector_v<T>, decltype(std::declval<T>()[index])> get_val(T& t)
 {
 	return t[index];
 }
 
 template <size_t index, typename T>
-constexpr std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<T>>, T&&> get_val(T&& t)
+constexpr std::enable_if_t<!is_vector_v<T>, T&> get_val(T& t)
 {
-	return std::forward<T>(t);
+	return t;
 }
 
 template<size_t Index, typename F, typename... ArgsT>
-auto vec_invoke_one(F& aFunction, ArgsT&&... someArgs)
+auto vec_invoke_one(F& aFunction, ArgsT&... someArgs)
 {
-	return aFunction(Details::get_val<Index>(std::forward<ArgsT>(someArgs))...);
+	return aFunction(Details::get_val<Index>(someArgs)...);
 }
 
 template<typename F, size_t... Ns, typename... U>
 auto vec_invoke_impl(F& aFunction, std::index_sequence<Ns...>, U&&... aRHS)
 {
-	return Vector_<decltype(vec_invoke_one<0>(aFunction, std::forward<U>(aRHS)...)), Ns...>{ vec_invoke_one<Ns>(aFunction, std::forward<U>(aRHS)...)... };
+	return Vector_<decltype(vec_invoke_one<0>(aFunction, aRHS...)), Ns...>{ vec_invoke_one<Ns>(aFunction, aRHS...)... };
 }
 
 template<typename F, typename... U, typename Indices = std::make_index_sequence<get_order_v<U...>>>
 auto vec_invoke(F& aFunction, U&&... aRHS)
 {
-	return vec_invoke_impl(aFunction, Indices{}, Details::decay(std::forward<U>(aRHS))...);
+	return vec_invoke_impl(aFunction, Indices{}, Details::decay(aRHS)...);
 }
 
 }
