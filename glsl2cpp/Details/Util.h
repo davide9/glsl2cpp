@@ -130,68 +130,50 @@ struct get_order<T, Ts...> : std::integral_constant<size_t, get_size_v<T> == 1 ?
 template<typename... Ts>
 constexpr size_t get_order_v = get_order<Ts...>::value;
 
-template<size_t index, typename T>
-constexpr std::enable_if_t<is_vector_v<T>, decltype(std::declval<T&>()[index])> get_val(T& t)
-{
-	return t[index];
-}
-
-template <size_t index, typename T>
-constexpr std::enable_if_t<!is_vector_v<T>, T&> get_val(T& t)
-{
-	return t;
-}
-
-template<size_t index, typename T>
-constexpr std::enable_if_t<is_vector_v<T>, decltype(std::declval<const T&>()[index])> get_val(const T& t)
-{
-    return t[index];
-}
-
-template <size_t index, typename T>
-constexpr std::enable_if_t<!is_vector_v<T>, const T&> get_val(const T& t)
-{
-    return t;
-}
-
-template<typename T>
-struct get_linear_type
-{
-    using type = decltype(get_val<0>(std::declval<T>()));
-};
-
-template<typename T>
-using get_linear_type_t = typename get_linear_type<T>::type;
-
-template<typename F, typename... ArgsT>
-using linear_invoke_result = std::invoke_result_t<F, get_linear_type_t<ArgsT>...>;
-
 template<typename T>
 struct vec_forwarding_proxy
 {
-    using forward_type = T;
+    constexpr vec_forwarding_proxy(T& aValue) : value{ aValue } {}
 
-    vec_forwarding_proxy(T& aValue) : value{ aValue } {}
+    template<size_t index>
+    constexpr auto&& get() {
+        if constexpr (is_vector_v<T>)
+        {
+            if constexpr (std::is_rvalue_reference_v<T>)
+            {
+                return  std::move(value[index]);
+            }
+            else
+            {
+                return value[index];
+            }
+        }
+        else
+        {
+            return value;
+        }
+    }
 
-    T& value;
+    std::remove_reference_t<T>& value;
 };
 
 template<size_t Index, typename F, typename... ArgsT>
 auto vec_invoke_line(F& aFunction, ArgsT&&... someArgs)
 {
-	return aFunction(get_val<Index>(std::forward<typename ArgsT::forward_type>(someArgs.value))...);
+	return aFunction(someArgs.get<Index>()...);
 }
 
 template<typename F, size_t... Ns, typename... ArgsT>
 auto vec_invoke_impl(F&& aFunction, std::index_sequence<Ns...>, ArgsT&&... aRHS)
 {
-    return Vector_<linear_invoke_result<F, ArgsT...>, Ns...>{ vec_invoke_line<Ns>(aFunction, vec_forwarding_proxy<ArgsT>{aRHS}...)... };
+    using result_type = decltype(vec_invoke_line<0>(aFunction, vec_forwarding_proxy<decltype(std::forward<ArgsT>(aRHS))>{aRHS}...));
+    return Vector_<result_type, Ns...>{ vec_invoke_line<Ns>(aFunction, vec_forwarding_proxy<decltype(std::forward<ArgsT>(aRHS))>{aRHS}...)... };
 }
 
 template<typename F, typename... U>
 auto vec_invoke(F&& aFunction, U&&... aRHS)
 {
-	return vec_invoke_impl(std::forward<F>(aFunction), std::make_index_sequence<get_order_v<U...>>{}, decay(aRHS)...);
+	return vec_invoke_impl(std::forward<F>(aFunction), std::make_index_sequence<get_order_v<U...>>{}, decay(std::forward<U>(aRHS))...);
 }
 
 }

@@ -5,10 +5,10 @@
 #include <cmath>
 
 #define DEFINE_FUNCTION(functionName, functionImpl) \
-template<typename T, typename... Us> \
-inline auto functionName(const T& aVector, Us&&... someArgs) \
+template<typename... Us> \
+inline auto functionName(Us&&... someArgs) \
 { \
-    return ::glsl2cpp::Details::decay(aVector).Invoke([](auto&&... args) { return functionImpl(std::forward<decltype(args)>(args)...); }, std::forward<Us>(someArgs)...); \
+    return ::glsl2cpp::Details::vec_invoke([](auto&&... args) { return functionImpl(std::forward<decltype(args)>(args)...); }, std::forward<Us>(someArgs)...); \
 }
 
 #define DEFINE_STD_FUNCTION(functionName) DEFINE_FUNCTION(functionName, std::functionName)

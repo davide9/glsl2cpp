@@ -7,6 +7,7 @@
 #include <Matrix.h>
 
 #include <memory>
+#include <tuple>
 
 TEST(Vector1, Construction)
 {
@@ -496,6 +497,10 @@ public:
 
 size_t Oracle::num_of_oracles = 0;
 
+int fooUnique(std::unique_ptr<Oracle> anOracle, int aVal) {
+    return (anOracle ? anOracle->value : Oracle::num_of_oracles) + aVal;
+}
+
 TEST(Vector, NonScalarTypes)
 {
     using oracle_unique = std::unique_ptr<Oracle>;
@@ -533,4 +538,12 @@ TEST(Vector, NonScalarTypes)
     EXPECT_EQ(u[0].value, 1);
     EXPECT_EQ(u[1].value, 2);
     EXPECT_EQ(u[2].value, 3);
+
+    unique_ptr_vec_3 w{ std::make_unique<Oracle>(1), std::make_unique<Oracle>(2) , std::make_unique<Oracle>(3) };
+    int i = 1;
+    auto r = vec_invoke([](auto&&... someArgs) { return fooUnique(std::forward<decltype(someArgs)>(someArgs)...); }, std::move(w), i);
+
+    EXPECT_EQ(r[0], 4);
+    EXPECT_EQ(r[1], 3);
+    EXPECT_EQ(r[2], 2);
 }
