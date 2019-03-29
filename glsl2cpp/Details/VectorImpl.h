@@ -15,14 +15,16 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 	using base_type = Details::VectorBase<T, sizeof...(Ns)>;
 	using decay_type = std::conditional_t<Order == 1, scalar_type, vector_type>;
 
-	static_assert(std::is_scalar_v<T>, "T must be a scalar type");
 	static_assert(Order > 0, "Order must be positive");
 
 	using base_type::myData;
 
 	Vector_()
 	{
-		((myData[Ns] = 0), ...);
+        if constexpr (std::is_scalar_v<scalar_type>)
+        {
+            ((myData[Ns] = 0), ...);
+        }
 	}
 
 	Vector_(std::conditional_t<Order == 1, scalar_type, Details::Nothing<0>> s)
@@ -43,18 +45,23 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 		(construct_at_index(i, Details::decay(std::forward<Args>(args))), ...);
 	}
 
-	scalar_type operator[](size_t i) const { return myData[i]; }
+	const scalar_type& operator[](size_t i) const { return myData[i]; }
 	scalar_type& operator[](size_t i) { return myData[i]; }
 
-	const decay_type& Decay() const
+	const decay_type& Decay() const &
 	{
 		return static_cast<const decay_type&>(*this);
 	}
 
-	decay_type& Decay()
+	decay_type& Decay() &
 	{
 		return static_cast<decay_type&>(*this);
 	}
+
+    decay_type&& Decay() &&
+    {
+        return static_cast<decay_type&&>(*this);
+    }
 
 	operator std::conditional_t<Order == 1, scalar_type&, Details::Nothing<0>>()
 	{
@@ -131,10 +138,10 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 
 private:
 
-	template<typename U, class = std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<U>>>>
+	template<typename U, class = std::enable_if_t<!Details::is_vector_v<U>>>
 	void construct_at_index(size_t &i, U&& arg)
 	{
-		myData[i++] = GLSL2CPP_CAST(arg);
+		myData[i++] = GLSL2CPP_CAST(std::forward<U>(arg));
 	}
 
 	template<typename Other, size_t... Other_Ns>
@@ -142,6 +149,12 @@ private:
 	{
 		((myData[i++] = GLSL2CPP_CAST(arg.myData[Other_Ns])), ...);
 	}
+
+    template<typename Other, size_t... Other_Ns>
+    void construct_at_index(size_t& i, Vector_<Other, Other_Ns...>&& arg)
+    {
+        ((myData[i++] = GLSL2CPP_CAST(std::move(arg.myData[Other_Ns]))), ...);
+    }
 
 	bool equal(const vector_type& anOther) const
 	{

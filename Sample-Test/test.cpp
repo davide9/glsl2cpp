@@ -6,6 +6,8 @@
 #include <Vector.h>
 #include <Matrix.h>
 
+#include <memory>
+
 TEST(Vector1, Construction)
 {
 	glsl2cpp::Vector<int, 1> vDefault;
@@ -471,4 +473,64 @@ TEST(Vector, Function)
     r = Clamp(v, 2.f, max);
 
 	EXPECT_EQ(r, clamp);
+}
+
+class Oracle
+{
+public:
+    static size_t num_of_oracles;
+
+    Oracle() : value{++num_of_oracles} {}
+
+    Oracle(int i) : value(i) {
+        ++num_of_oracles;
+    }
+
+    ~Oracle()
+    {
+        --num_of_oracles;
+    }
+
+    size_t value;
+};
+
+size_t Oracle::num_of_oracles = 0;
+
+TEST(Vector, NonScalarTypes)
+{
+    using oracle_unique = std::unique_ptr<Oracle>;
+    using unique_ptr_vec_3 = glsl2cpp::Vector<oracle_unique, 3>;
+
+    Oracle::num_of_oracles = 0;
+
+    ASSERT_EQ(Oracle::num_of_oracles, 0);
+
+    unique_ptr_vec_3 v { std::make_unique<Oracle>(1), std::make_unique<Oracle>(2) , std::make_unique<Oracle>(3) };
+
+    ASSERT_EQ(Oracle::num_of_oracles, 3);
+    EXPECT_EQ(v[0]->value, 1);
+    EXPECT_EQ(v[1]->value, 2);
+    EXPECT_EQ(v[2]->value, 3);
+
+    {
+        unique_ptr_vec_3 u{ std::move(v) };
+
+        EXPECT_FALSE(v[0]);
+        EXPECT_FALSE(v[1]);
+        EXPECT_FALSE(v[2]);
+
+        ASSERT_EQ(Oracle::num_of_oracles, 3);
+        EXPECT_EQ(u[0]->value, 1);
+        EXPECT_EQ(u[1]->value, 2);
+        EXPECT_EQ(u[2]->value, 3);
+    }
+
+    ASSERT_EQ(Oracle::num_of_oracles, 0);
+
+    using oracle_vec3 = glsl2cpp::Vector<Oracle, 3>;
+    oracle_vec3 u{};
+
+    EXPECT_EQ(u[0].value, 1);
+    EXPECT_EQ(u[1].value, 2);
+    EXPECT_EQ(u[2].value, 3);
 }

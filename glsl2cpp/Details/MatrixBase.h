@@ -8,13 +8,16 @@ namespace Details {
 template<typename T, size_t N>
 struct Matrix_Def
 {
-	template<size_t... Ns>
-	struct M
-	{
-		using type = Matrix_<T, Ns...>;
-	};
+    template<typename T, typename IS>
+    struct Matrix_Def_Impl;
 
-	using type = typename unpack_t<M, std::make_index_sequence<N>>::type;
+    template<typename T, size_t... Ns>
+    struct Matrix_Def_Impl<T, std::index_sequence<Ns...>>
+    {
+        using type = Matrix_<T, Ns...>;
+    };
+
+    using type = typename Matrix_Def_Impl<T, std::make_index_sequence<N>>::type;
 };
 
 template<typename T, size_t N>
@@ -35,6 +38,10 @@ struct BaseMatrix_
 {
 	BaseMatrix_() : myData{} {}
 
+    ~BaseMatrix_() {
+        for (auto& data : myData) data.T::~T();
+    }
+
 	union
 	{
 		T myData[N * N];
@@ -47,6 +54,10 @@ template<typename T, template<size_t...> class SwizzlerT>
 struct BaseMatrix_<T, 3, SwizzlerT>
 {
 	BaseMatrix_() : myData{} {}
+
+    ~BaseMatrix_() {
+        for (auto& data : myData) data.T::~T();
+    }
 
 	union
 	{
@@ -70,6 +81,10 @@ struct BaseMatrix_<T, 4, SwizzlerT>
 
 	template<size_t M, size_t... Indices>
 	using Swizzler = typename SwizzlerT<M, Indices...>::type;
+
+    ~BaseMatrix_() {
+        for (auto& data : myData) data.T::~T();
+    }
 
 	union
 	{
@@ -101,18 +116,19 @@ struct Matrix_ : Details::BaseMatrix_<T, sizeof...(Ns)>
 	using vector_type = Vector_<T, Ns...>;
 	using matrix_type = Matrix_<T, Ns...>;
 	using base_type = Details::BaseMatrix_<T, sizeof...(Ns)>;
+    using decay_type = matrix_type;
 
 	static_assert(std::is_scalar_v<T>, "T must be a scalar type");
 	static_assert(Order > 1, "Order must be positive and greater than 1");
 
 	using base_type::myMat;
 
-	const matrix_type& Decay() const
+	const decay_type& Decay() const
 	{
 		return *this;
 	}
 
-	matrix_type& Decay()
+    decay_type& Decay()
 	{
 		return *this;
 	}

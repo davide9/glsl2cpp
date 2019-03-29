@@ -10,13 +10,16 @@ namespace Details {
 template<typename T, size_t N>
 struct Vector_Def
 {
-	template<size_t... Ns>
-	struct V
-	{
-		using type = Vector_<T, Ns...>;
-	};
+    template<typename T, typename IS>
+    struct Vector_Def_Impl;
 
-	using type = typename unpack_t<V, std::make_index_sequence<N>>::type;
+    template<typename T, size_t... Ns>
+    struct Vector_Def_Impl<T, std::index_sequence<Ns...>>
+    {
+        using type = Vector_<T, Ns...>;
+    };
+
+    using type = typename Vector_Def_Impl<T, std::make_index_sequence<N>>::type;
 };
 
 template<typename T, size_t N>
@@ -50,6 +53,12 @@ struct VectorBase<T, 1, SwizzlerT>
 	template<size_t... Indices>
 	using Swizzler = typename SwizzlerT<Indices...>::type;
 
+    ~VectorBase() {
+        for (auto& data : myData) data.T::~T();
+    }
+
+    VectorBase() : myData{} {}
+
 	union
 	{
 		T myData[1];
@@ -80,6 +89,12 @@ struct VectorBase<T, 2, SwizzlerT>
 {
 	template<size_t... Indices>
 	using Swizzler = typename SwizzlerT<Indices...>::type;
+
+    ~VectorBase() {
+        for (auto& data : myData) data.T::~T();
+    }
+    VectorBase() : myData{} {}
+
 
 	union
 	{
@@ -144,6 +159,11 @@ struct VectorBase<T, 3, SwizzlerT>
 {
 	template<size_t... Indices>
 	using Swizzler = typename SwizzlerT<Indices...>::type;
+
+    ~VectorBase() {
+        for (auto& data : myData) data.T::~T();
+    }
+    VectorBase() : myData{} {}
 
 	union
 	{
@@ -303,6 +323,11 @@ struct VectorBase<T, 4, SwizzlerT>
 {
 	template<size_t... Indices>
 	using Swizzler = typename SwizzlerT<Indices...>::type;
+
+    ~VectorBase() {
+        for (auto& data : myData) data.T::~T();
+    }
+    VectorBase() : myData{} {}
 
 	union
 	{

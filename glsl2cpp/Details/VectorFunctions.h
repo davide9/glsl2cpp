@@ -15,6 +15,7 @@ inline auto functionName(const T& aVector, Us&&... someArgs) \
 #define DEFINE_GLSL2CPP_FUNCTION(functionName) DEFINE_FUNCTION(functionName, ::glsl2cpp::Functions::functionName)
 
 namespace glsl2cpp {
+
 namespace Functions{
 
 template<typename T0, typename T1, typename T2>

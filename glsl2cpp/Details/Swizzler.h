@@ -10,6 +10,8 @@ namespace Details {
 template<typename SubT, typename T, size_t N, size_t... Indices>
 struct Swizzler
 {
+    using decay_type = SubT;
+
 	static constexpr size_t Order = sizeof...(Indices);
 
 	T myData[N];
