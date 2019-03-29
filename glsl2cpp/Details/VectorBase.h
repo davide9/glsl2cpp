@@ -8,24 +8,6 @@ namespace glsl2cpp {
 namespace Details {
 
 template<typename T, size_t N>
-struct Vector_Def
-{
-    template<typename T, typename IS>
-    struct Vector_Def_Impl;
-
-    template<typename T, size_t... Ns>
-    struct Vector_Def_Impl<T, std::index_sequence<Ns...>>
-    {
-        using type = Vector_<T, Ns...>;
-    };
-
-    using type = typename Vector_Def_Impl<T, std::make_index_sequence<N>>::type;
-};
-
-template<typename T, size_t N>
-using Vector_Def_t = typename Vector_Def<T, N>::type;
-
-template<typename T, size_t N>
 struct SwizzlerFactory
 {
 	template<size_t... Indices>

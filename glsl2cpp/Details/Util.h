@@ -26,6 +26,24 @@ struct Matrix_;
 
 namespace Details {
 
+template<typename T, size_t N>
+struct Vector_Def
+{
+    template<typename T, typename IS>
+    struct Vector_Def_Impl;
+
+    template<typename T, size_t... Ns>
+    struct Vector_Def_Impl<T, std::index_sequence<Ns...>>
+    {
+        using type = Vector_<T, Ns...>;
+    };
+
+    using type = typename Vector_Def_Impl<T, std::make_index_sequence<N>>::type;
+};
+
+template<typename T, size_t N>
+using Vector_Def_t = typename Vector_Def<T, N>::type;
+
 template<typename SubT, typename T, size_t N, size_t... Indices>
 struct Swizzler;
 
@@ -167,7 +185,7 @@ template<typename F, size_t... Ns, typename... ArgsT>
 auto vec_invoke_impl(F&& aFunction, std::index_sequence<Ns...>, ArgsT&&... aRHS)
 {
     using result_type = decltype(vec_invoke_line<0>(aFunction, vec_forwarding_proxy<decltype(std::forward<ArgsT>(aRHS))>{aRHS}...));
-    return Vector_<result_type, Ns...>{ vec_invoke_line<Ns>(aFunction, vec_forwarding_proxy<decltype(std::forward<ArgsT>(aRHS))>{aRHS}...)... };
+    return Vector_Def_t<result_type, sizeof...(Ns)>{ vec_invoke_line<Ns>(aFunction, vec_forwarding_proxy<decltype(std::forward<ArgsT>(aRHS))>{aRHS}...)... };
 }
 
 template<typename F, typename... U>
