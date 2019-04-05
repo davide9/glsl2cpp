@@ -29,13 +29,6 @@ namespace Details {
 template<typename SubT, typename T, size_t N, size_t... Indices>
 struct Swizzler;
 
-template<typename... T>
-struct check_invocable
-{
-    template<typename F>
-    static constexpr bool check(F&&) { return std::is_invocable_v<F, T...>; }
-};
-
 template<typename T>
 using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
 
@@ -115,7 +108,7 @@ template<typename T>
 struct get_size_<T, false> : std::integral_constant<size_t, 1> {};
 
 template<typename T>
-struct get_size : get_size_<decay_type_t<T>, is_vector_v<decay_type_t<T>> || is_matrix_v<T>> {};
+struct get_size : get_size_<decay_type_t<T>, is_vector_v<decay_type_t<T>> || is_matrix_v<decay_type_t<T>>> {};
 
 template<typename T>
 constexpr size_t get_size_v = get_size<T>::value;
@@ -145,27 +138,54 @@ template<typename... Ts>
 constexpr size_t get_order_v = get_order<Ts...>::value;
 
 template<size_t index, typename T>
-constexpr std::enable_if_t<is_vector_v<T>, decltype(std::declval<T>()[index])> get_val(T& t)
+constexpr std::enable_if_t<is_vector_v<T>, decltype(std::declval<T>()[index])> get_val(T&& t)
 {
 	return t[index];
 }
 
 template <size_t index, typename T>
-constexpr std::enable_if_t<!is_vector_v<T>, T&> get_val(T& t)
+constexpr std::enable_if_t<!is_vector_v<T>, T> get_val(T&& t)
 {
 	return t;
 }
 
+template<typename T>
+struct get_linear_type
+{
+    using type = remove_cvref_t<decltype(get_val<0>(std::declval<decay_type_t<T>>()))>;
+};
+
+template<typename T>
+using get_linear_type_t = typename get_linear_type<T>::type;
+
+template<typename F, typename... U>
+struct vec_invoke_one_result
+{
+    using type = std::invoke_result_t<F, get_linear_type_t<U>...>;
+};
+
+template<typename F, typename... U>
+struct is_vec_invocable
+{
+    static constexpr bool value = std::is_invocable_v<F, get_linear_type_t<U>...>;
+};
+
+template<typename F, typename... U>
+constexpr bool is_vec_invocable_v = is_vec_invocable<F, U...>::value;
+
+template<typename F, typename... U>
+using vec_invoke_one_result_t = typename vec_invoke_one_result<F, U...>::type;
+
 template<size_t Index, typename F, typename... ArgsT>
 auto vec_invoke_one(F& aFunction, ArgsT&... someArgs)
 {
-	return aFunction(Details::get_val<Index>(someArgs)...);
+	return std::invoke(aFunction, Details::get_val<Index>(someArgs)...);
 }
 
 template<typename F, size_t... Ns, typename... U>
 auto vec_invoke_impl(F& aFunction, std::index_sequence<Ns...>, U&&... aRHS)
 {
-	return Vector_<decltype(vec_invoke_one<0>(aFunction, aRHS...)), Ns...>{ vec_invoke_one<Ns>(aFunction, aRHS...)... };
+	return Vector_<vec_invoke_one_result_t<F, U...>, Ns...>{ vec_invoke_one<Ns>(aFunction, aRHS...)... };
 }
 
 template<typename F, typename... U, typename Indices = std::make_index_sequence<get_order_v<U...>>>

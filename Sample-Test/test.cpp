@@ -81,6 +81,8 @@ TEST(Vector3, Construction)
 	EXPECT_EQ(vSwizzlerMix.z, 5);
 }
 
+
+
 TEST(Vector4, Construction)
 {
 	glsl2cpp::vec4i vDefault;
