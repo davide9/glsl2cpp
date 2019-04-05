@@ -96,29 +96,29 @@ constexpr auto decay(T&& t)
     }
 }
 
-template<template <size_t...> class T, typename L>
-struct unpack;
-
-template<template <size_t...> class T, size_t... Ns>
-struct unpack<T, std::index_sequence<Ns...>>
+template<typename T>
+struct decay_type
 {
-	using type = T<Ns...>;
+    using type = decltype(decay(std::declval<T>()));
 };
 
-template<template <size_t...> class T, typename L>
-using unpack_t = typename unpack<T, L>::type;
+template<typename T>
+using decay_type_t = typename decay_type<T>::type;
+
+template<typename T, bool hasSize>
+struct get_size_;
 
 template<typename T>
-struct get_size : std::enable_if_t<std::is_scalar_v<std::decay_t<T>>, std::integral_constant<size_t, 1>> {};
-
-template<typename T, size_t... Ns>
-struct get_size<Vector_<T, Ns...>> : std::integral_constant<size_t, sizeof...(Ns)> {};
-
-template<typename T, size_t... Ns>
-struct get_size<Matrix_<T, Ns...>> : std::integral_constant<size_t, sizeof...(Ns) * sizeof...(Ns)> {};
+struct get_size_<T, true> : std::integral_constant<size_t, T::Size> {};
 
 template<typename T>
-constexpr size_t get_size_v = get_size<remove_cvref_t<decltype(decay(std::declval<T>()))>>::value;
+struct get_size_<T, false> : std::integral_constant<size_t, 1> {};
+
+template<typename T>
+struct get_size : get_size_<decay_type_t<T>, is_vector_v<decay_type_t<T>> || is_matrix_v<T>> {};
+
+template<typename T>
+constexpr size_t get_size_v = get_size<T>::value;
 
 template<typename... Ts>
 struct get_total_size;
@@ -131,9 +131,6 @@ struct get_total_size<T, Ts...> : std::integral_constant<size_t, get_size_v<T> +
 
 template<typename... Ts>
 constexpr size_t get_total_size_v = get_total_size<Ts...>::value;
-
-template<typename T>
-constexpr bool is_scalar_v = std::is_scalar_v<decltype(decay(std::declval<T>()))>;
 
 template<typename... Ts>
 struct get_order;

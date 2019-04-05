@@ -10,13 +10,17 @@ namespace Details {
 template<typename T, size_t N>
 struct Vector_Def
 {
+    template<typename T>
+    struct V
+    {};
+
 	template<size_t... Ns>
-	struct V
+	struct V<std::index_sequence<Ns...>>
 	{
 		using type = Vector_<T, Ns...>;
 	};
 
-	using type = typename unpack_t<V, std::make_index_sequence<N>>::type;
+	using type = typename V<std::make_index_sequence<N>>::type;
 };
 
 template<typename T, size_t N>

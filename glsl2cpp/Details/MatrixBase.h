@@ -8,13 +8,17 @@ namespace Details {
 template<typename T, size_t N>
 struct Matrix_Def
 {
-	template<size_t... Ns>
-	struct M
-	{
-		using type = Matrix_<T, Ns...>;
-	};
+    template<typename T>
+    struct M
+    {};
 
-	using type = typename unpack_t<M, std::make_index_sequence<N>>::type;
+    template<size_t... Ns>
+    struct M<std::index_sequence<Ns...>>
+    {
+        using type = Matrix_<T, Ns...>;
+    };
+
+	using type = typename M<std::make_index_sequence<N>>::type;
 };
 
 template<typename T, size_t N>
