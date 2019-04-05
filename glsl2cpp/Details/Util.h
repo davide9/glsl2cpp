@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include <utility>
 
 #ifndef ALLOW_GLSL2CPP_NARROW_CONVERSION
 #define ALLOW_GLSL2CPP_NARROW_CONVERSION 1
@@ -193,6 +194,14 @@ auto vec_invoke(F& aFunction, U&&... aRHS)
 {
 	return vec_invoke_impl(aFunction, Indices{}, Details::decay(aRHS)...);
 }
+
+template<typename T>
+struct try_apply
+{
+    template <class Tuple>
+    constexpr auto operator()(Tuple&& t) -> decltype(std::declval<T>()(std::forward<Tuple>(t),
+                                                                       std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{}));
+};
 
 }
 }

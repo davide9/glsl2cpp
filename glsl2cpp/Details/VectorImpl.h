@@ -124,12 +124,6 @@ struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 		return !equal(decay(anOther));
 	}
 
-	template<typename F, typename... U>
-	auto Invoke(F& aFunction, U&&... aRHS) const
-	{
-		return Details::vec_invoke(aFunction, *this, std::forward<U>(aRHS)...);
-	}
-
 private:
 
 	template<typename U, class = std::enable_if_t<std::is_arithmetic_v<std::remove_reference_t<U>>>>

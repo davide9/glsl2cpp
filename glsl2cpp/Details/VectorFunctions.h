@@ -7,35 +7,23 @@
 #include <utility>
 
 #define DEFINE_FUNCTION(functionName, functionImpl) \
-namespace Details { struct try_apply_##functionName { \
-template <class Tuple, std::size_t... I>\
-constexpr auto operator()(Tuple&& t, std::index_sequence<I...>) -> decltype(functionImpl(std::get<I>(std::forward<Tuple>(t))...));\
-};}\
+namespace glsl2cpp_details { \
+struct try_apply_##functionName { \
+    template <class Tuple, std::size_t... I>\
+    constexpr auto operator()(Tuple&& t, std::index_sequence<I...>) -> decltype(functionImpl(std::get<I>(std::forward<Tuple>(t))...));\
+}; \
+template<typename... ArgsT>\
+using check_invoke_##functionName = glsl2cpp_detail_check_invoke_<::glsl2cpp::Details::try_apply<try_apply_##functionName>, ArgsT...>;\
+}\
 template<typename... ArgsT> \
-inline auto functionName(ArgsT&&... someArgs) -> std::enable_if_t< \
- glsl2cpp_detail_check_invoke_<glsl2cpp::Details::try_apply<Details::try_apply_##functionName>, ArgsT...>::value \
-, typename glsl2cpp_detail_check_invoke_<glsl2cpp::Details::try_apply<Details::try_apply_##functionName>, ArgsT...>::result_type \
->\
+inline auto functionName(ArgsT&&... someArgs) -> std::enable_if_t<glsl2cpp_details::check_invoke_##functionName<ArgsT...>::value \
+, typename glsl2cpp_details::check_invoke_##functionName<ArgsT...>::result_type>\
 { \
     return ::glsl2cpp::Details::vec_invoke([](auto&&... args){ return functionImpl(std::forward<decltype(args)>(args)...); }, std::forward<ArgsT>(someArgs)...);\
 }
 
 #define DEFINE_STD_FUNCTION(functionName) DEFINE_FUNCTION(functionName, std::functionName)
 #define DEFINE_GLSL2CPP_FUNCTION(functionName) DEFINE_FUNCTION(functionName, ::glsl2cpp::Functions::functionName)
-
-namespace glsl2cpp {
-namespace Details {
-
-template<typename T>
-struct try_apply
-{
-    template <class Tuple>
-    constexpr auto operator()(Tuple&& t) -> decltype(std::declval<T>()(std::forward<Tuple>(t),
-                                                                       std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{}));
-};
-
-}
-}
 
 template<typename T, typename... ArgsT>
 struct glsl2cpp_detail_check_invoke_
