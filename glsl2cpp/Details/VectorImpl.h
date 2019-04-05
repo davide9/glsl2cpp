@@ -9,6 +9,7 @@ template<typename T, size_t... Ns>
 struct Vector_ : Details::VectorBase<T, sizeof...(Ns)>
 {
 	static constexpr size_t Order = sizeof...(Ns);
+    static constexpr size_t Size = Order;
 
 	using scalar_type = T;
 	using vector_type = Vector_<T, Ns...>;

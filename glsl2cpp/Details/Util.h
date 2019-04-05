@@ -45,10 +45,48 @@ struct Nothing
 	Nothing() = delete;
 };
 
+template<typename T>
+struct is_vector_ : std::false_type
+{};
+
+template<typename T, size_t... Ns>
+struct is_vector_<Vector_<T, Ns...>> : std::true_type
+{};
+
+template<typename T, size_t N, size_t... Indices, size_t... Ns>
+struct is_vector_<Swizzler<Vector_<T, Ns...>, T, N, Indices...>> : std::true_type
+{};
+
+template<typename T>
+struct is_vector : is_vector_<remove_cvref_t<T>>
+{};
+
+template<typename T>
+constexpr bool is_vector_v = is_vector<T>::value;
+
+template<typename T>
+struct is_matrix_ : std::false_type
+{};
+
+template<typename T, size_t... Ns>
+struct is_matrix_<Matrix_<T, Ns...>> : std::true_type
+{};
+
+template<typename T, size_t N, size_t... Indices, size_t... Ns>
+struct is_matrix_<Swizzler<Matrix_<T, Ns...>, T, N, Indices...>> : std::true_type
+{};
+
+template<typename T>
+struct is_matrix : is_matrix_<remove_cvref_t<T>>
+{};
+
+template<typename T>
+constexpr bool is_matrix_v = is_matrix<T>::value;
+ 
 template <class T>
 constexpr auto decay(T&& t)
 {
-    if constexpr (check_invocable<T>::check([](auto x) -> decltype(x.Decay()) { return x.Decay(); }))
+    if constexpr (is_vector_v<T> || is_matrix_v<T>)
     {
         return t.Decay();
     }
@@ -93,24 +131,6 @@ struct get_total_size<T, Ts...> : std::integral_constant<size_t, get_size_v<T> +
 
 template<typename... Ts>
 constexpr size_t get_total_size_v = get_total_size<Ts...>::value;
-
-template<typename T>
-struct is_vector : std::false_type {};
-
-template<typename T, size_t... Ns>
-struct is_vector<Vector_<T, Ns...>> : std::true_type {};
-
-template<typename T>
-constexpr bool is_vector_v = is_vector<remove_cvref_t<decltype(decay(std::declval<T>()))>>::value;
-
-template<typename T>
-struct is_matrix: std::false_type {};
-
-template<typename T, size_t... Ns>
-struct is_matrix<Matrix_<T, Ns...>> : std::true_type {};
-
-template<typename T>
-constexpr bool is_matrix_v = is_matrix<remove_cvref_t<decltype(decay(std::declval<T>()))>>::value;
 
 template<typename T>
 constexpr bool is_scalar_v = std::is_scalar_v<decltype(decay(std::declval<T>()))>;
